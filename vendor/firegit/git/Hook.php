@@ -1,9 +1,9 @@
 <?php
-namespace firegit\hook;
+namespace firegit\git;
 
 require_once dirname(__DIR__).'/util/ColorConsole.php';
 
-class GitHook
+class Hook
 {
     /**
      * 从远程推送提交到服务器上时
