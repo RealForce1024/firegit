@@ -1,0 +1,19 @@
+{
+    "name": "ronnie/firegit",
+    "description": "firegit--git manager platform based on php/mysql",
+    "authors": [
+        {
+            "name": "ronnie",
+            "email": "comdeng@live.com"
+        }
+    ],
+    "require": {
+        "php":">=5.5.9"
+    },
+    "repositories": {
+        "packagist": {
+            "type": "composer",
+            "url": "http://packagist.phpcomposer.com"
+        }
+    }
+}
