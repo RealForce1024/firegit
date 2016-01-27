@@ -19,9 +19,9 @@ class Reposite
     {
         $this->group = $group;
         $this->name = $name;
-        $this->dir = realpath(GIT_REPO.'/'.$this->group.'/'.$this->name.'.git');
+        $this->dir = realpath(GIT_REPO . '/' . $this->group . '/' . $this->name . '.git');
         if (!is_dir($this->dir)) {
-            throw new \Exception('reposite.dirNotFound dir='.$this->dir);
+            throw new \Exception('reposite.dirNotFound dir=' . $this->dir);
         }
     }
 
@@ -44,7 +44,7 @@ class Reposite
             'dirs' => array(),
             'files' => array(),
         );
-        foreach($outputs as $key => $line) {
+        foreach ($outputs as $key => $line) {
             $node = self::parseByLine($line);
             if ($node['dir']) {
                 $ret['dirs'][strtolower($node['name'])] = $node;
@@ -52,8 +52,8 @@ class Reposite
                 $ret['files'][strtolower($node['name'])] = $node;
             }
         }
-        ksort($ret['dirs'], SORT_STRING   );
-        ksort($ret['files'], SORT_STRING   );
+        ksort($ret['dirs'], SORT_STRING);
+        ksort($ret['files'], SORT_STRING);
         return $ret;
     }
 
@@ -69,7 +69,7 @@ class Reposite
         $cmd = sprintf('git log --oneline -%d %s --format="%s"', $num, $hash, '%H %ct %an %s');
         exec($cmd, $outputs, $code);
         $commits = array();
-        foreach($outputs as $line) {
+        foreach ($outputs as $line) {
             $arr = explode(' ', $line, 4);
             $commits[] = array(
                 'hash' => $arr[0],
@@ -90,7 +90,7 @@ class Reposite
         $cmd = sprintf('git branch -v --list');
         exec($cmd, $outputs, $code);
         $branches = array();
-        foreach($outputs as $line) {
+        foreach ($outputs as $line) {
             $line = ltrim(ltrim($line, '*'));
             $arr = preg_split('#\s+#', $line, 3);
             $branches[] = array(
@@ -102,7 +102,30 @@ class Reposite
         return $branches;
     }
 
-    static function  parseByLine($line)
+    /**
+     * 获取文件原始内容
+     * @param $branch
+     * @param $path
+     * @return string
+     */
+    function getBlob($branch, $path)
+    {
+        chdir($this->dir);
+        $cmd = sprintf('git ls-tree %s %s -l', $branch, $path);
+        exec($cmd, $outputs, $code);
+        if (!$outputs) {
+            return false;
+        }
+        $node = self::parseByLine($outputs[0]);
+
+        $cmd = 'git show ' . $node['hash'];
+        ob_start();
+        system($cmd);
+        $node['content'] = ob_get_clean();
+        return $node;
+    }
+
+    static function parseByLine($line)
     {
         list($mode, $type, $hash, $size, $path) = preg_split('#[\s\t]+#', $line);
         $path = Util::normalPath($path);
@@ -112,7 +135,7 @@ class Reposite
             'type' => $type,
             'hash' => $hash,
             'path' => $path,
-            'dir'  => false,
+            'dir' => false,
         );
 
 

@@ -1,0 +1,28 @@
+{
+  "name": "firegit",
+  "version": "1.0.0",
+  "description": "FireGit - A Git Manage Platform Based on Php.",
+  "main": "public/index.php",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/comdeng/firegit.git"
+  },
+  "keywords": [
+    "firegit",
+    "git",
+    "php"
+  ],
+  "author": "ronnie",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/comdeng/firegit/issues"
+  },
+  "homepage": "https://github.com/comdeng/firegit#readme",
+  "devDependencies": {
+    "del": "^2.2.0",
+    "gulp": "^3.9.0"
+  }
+}

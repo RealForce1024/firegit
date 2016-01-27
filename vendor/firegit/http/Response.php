@@ -3,22 +3,24 @@ namespace firegit\http;
 
 class Response
 {
-    var $v = array();
+    private $outputs = array();
+    private $status = 'firegit.ok';
+    private $tpl;
+    protected $layout;
+    private $raw;
+    private $ex;
+
+
     /**
-     * 展示模板
-     * @param $tpl
-     * @throws \Exception
+     * 设置异常
+     * @param $ex
+     * @return $this
      */
-    function display($tpl)
+    function setException($ex)
     {
-        $path = VIEW_ROOT.'/'.$tpl;
-        if (!is_readable($path)) {
-            throw new \Exception('firegit.u_notfound view='.$path);
-        }
-        ob_start();
-        include $path;
-        $content = ob_get_clean();
-        echo $content;
+        $this->ex = $ex;
+        $this->status = 'firegit.fatal';
+        return $this;
     }
 
     /**
@@ -30,12 +32,108 @@ class Response
     function set($key, $value = null)
     {
         if (is_array($key) && $value === null) {
-            foreach($key as $k => $v) {
-                $this->v[$k] = $v;
+            foreach ($key as $k => $v) {
+                $this->outputs[$k] = $v;
             }
             return $this;
         }
-        $this->v[$key] = $value;
+        $this->outputs[$key] = $value;
         return $this;
+    }
+
+    /**
+     * 设置模板
+     * @param $tpl
+     * @param string $layout
+     * @return $this
+     */
+    function setView($tpl, $layout = null)
+    {
+        $this->tpl = VIEW_ROOT . $tpl;
+        if ($layout !== null) {
+            if (!$layout) {
+                $this->layout = '';
+            } else {
+                $this->layout = VIEW_ROOT. $layout;
+            }
+        }
+        return $this;
+    }
+
+    /**
+     * 设置模板
+     * @param $layout
+     * @return $this
+     */
+    function setLayout($layout)
+    {
+        $this->layout = VIEW_ROOT.$layout;
+        return $this;
+    }
+
+    /**
+     * 设置原始输出内容
+     * @param $raw
+     * @return $this
+     */
+    function setRaw($raw)
+    {
+        $this->raw = $raw;
+        return $this;
+    }
+
+    /**
+     * 输出内容
+     */
+    function output(\firegit\http\Request $req)
+    {
+        if ($this->ex) {
+            $this->outputs = array(
+                'msg' => $this->ex->getMessage(),
+                'trace' => $this->ex->getTraceAsString()
+            );
+        }
+        $output = array(
+            'ret' => $this->status,
+            'data' => $this->outputs,
+        );
+        if ($this->tpl) {
+            $ext = 'html';
+            $req->contentType = 'Content-type:text/html; charset='.$req->charset;
+        } else {
+            $ext = $req->ext;
+        }
+        header($req->contentType);
+        switch ($ext) {
+            case 'html':
+            case 'htm':
+            case 'js':
+            case 'xml':
+                if ($this->tpl) {
+                    $view = new \firegit\http\View();
+                    $view->set($this->outputs);
+                    if ($this->layout) {
+                        $view->setLayout($this->layout);
+                    }
+                    $view->display($this->tpl);
+                } elseif ($this->raw) {
+                    echo $this->raw;
+                }
+                break;
+            case 'json':
+                echo json_encode($output, $req->options['json']);
+                break;
+
+            case 'jpg':
+            case 'jpeg':
+            case 'gif':
+            case 'png':
+                header('Content-type: application/png');
+                echo $this->raw;
+                break;
+            default:
+                print_r($output);
+                break;
+        }
     }
 }

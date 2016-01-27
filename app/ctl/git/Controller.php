@@ -24,14 +24,14 @@ class Controller extends \firegit\http\Controller
                 'name' => $this->gitName,
                 'path' => $this->gitPath,
                 'branch' => $this->gitBranch,
-                'url' => 'http://'.$this->request->host.'/'.$this->gitGroup.'/'.$this->gitName.'.git',
+                'url' => 'http://' . $this->request->host . '/' . $this->gitGroup . '/' . $this->gitName . '.git',
             ),
         ));
 
-
+        $this->response->setLayout('layout/common.phtml');
     }
 
-    function index_action($args)
+    function index_action()
     {
         $this->tree_action();
     }
@@ -42,7 +42,7 @@ class Controller extends \firegit\http\Controller
         if (!$this->gitPath) {
             $dir = './';
         } else {
-            $dir = './'.$this->gitPath.'/';
+            $dir = './' . $this->gitPath . '/';
         }
         $nodes = $reposite->listFiles($this->gitBranch, $dir);
 
@@ -51,12 +51,35 @@ class Controller extends \firegit\http\Controller
         $this->response->set(array(
             'nodes' => $nodes,
             'branches' => $branches,
-        ))->display('git/index.phtml');
+        ))->setView('git/index.phtml');
     }
 
     function blob_action()
     {
-        var_dump($this);
+        $reposite = new Reposite($this->gitGroup, $this->gitName);
+        $node = $reposite->getBlob($this->gitBranch, $this->gitPath);
+        switch ($this->request->ext) {
+            case 'md':
+                require_once VENDOR_ROOT . '/parsedown/Parsedown.php';
+                $parsedown = new \Parsedown();
+                $node['content'] = $parsedown->text($node['content']);
+                break;
+            case 'php':
+            case 'json':
+            case 'css':
+            case 'js':
+            case 'xml':
+            case 'html':
+            case 'htm':
+            case 'java':
+            case 'py':
+            case 'gitignore':
+                $node['content'] = '<pre><code class="' .
+                    $this->request->ext
+                    . '">' . htmlspecialchars($node['content']) . '</code></pre>';
+                break;
+        }
+        $this->response->set('node', $node)->setView('git/blob.phtml');
     }
 
     function commits_action()
@@ -67,18 +90,24 @@ class Controller extends \firegit\http\Controller
 
         $branches = $reposite->listBranches();
 
-        $this->response->set(array(
-            'commits' => $commits,
-            'branches' => $branches,
-        ))->display('git/commits.phtml');
+        $this->response
+            ->set(array(
+                'navType' => 'commit',
+                'commits' => $commits,
+                'branches' => $branches,
+            ))
+            ->setView('git/commits.phtml');
     }
 
     function branches_action()
     {
         $reposite = new Reposite($this->gitGroup, $this->gitName);
         $branches = $reposite->listBranches();
-        $this->response->set(array(
-            'branches' => $branches,
-        ))->display('git/branches.phtml');
+        $this->response
+            ->set(array(
+                'navType' => 'branch',
+                'branches' => $branches,
+            ))
+            ->setView('git/branches.phtml');
     }
 }
