@@ -38,3 +38,14 @@
     <?php endforeach ?>
     </tbody>
 </table>
+
+<?php if(!empty($this->v['readme'])):?>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h5><?=$this->v['readme']['name']?></h5>
+        </div>
+        <div class="panel-body">
+            <?=$this->v['readme']['content']?>
+        </div>
+    </div>
+<?php endif?>

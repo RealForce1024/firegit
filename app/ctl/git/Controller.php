@@ -47,6 +47,15 @@ class Controller extends \firegit\http\Controller
         $nodes = $reposite->listFiles($this->gitBranch, $dir);
 
         $branches = $reposite->listBranches();
+
+        if (!empty($nodes['files']['readme.md'])) {
+            $node = $nodes['files']['readme.md'];
+            $node = $reposite->getBlob($this->gitBranch, $node['path']);
+            require_once VENDOR_ROOT . '/parsedown/Parsedown.php';
+            $parsedown = new \Parsedown();
+            $node['content'] = $parsedown->text($node['content']);
+            $this->response->set('readme', $node);
+        }
         // 获取
         $this->response->set(array(
             'nodes' => $nodes,
@@ -74,10 +83,13 @@ class Controller extends \firegit\http\Controller
             case 'java':
             case 'py':
             case 'gitignore':
+            case 'gitmodules':
                 $node['content'] = '<pre><code class="' .
                     $this->request->ext
                     . '">' . htmlspecialchars($node['content']) . '</code></pre>';
                 break;
+            case 'ico':
+                $node['content'] = '<img src="data:image/png;base64,'.base64_encode($node['content']).'"/>';
         }
         $this->response->set('node', $node)->setView('git/blob.phtml');
     }
