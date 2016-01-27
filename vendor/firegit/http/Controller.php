@@ -3,6 +3,7 @@ namespace firegit\http;
 
 class Controller
 {
+    var $method;
     /**
      * @var \firegit\http\Request
      */

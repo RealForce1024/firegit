@@ -8,5 +8,5 @@ if ($user != 'root') {
     exit(system($cmd));
 }
 require_once dirname(__DIR__).'/Manager.php';
-\firegit\git\Manager::init('ronnie', 'test');
+\firegit\git\Manager::init('ronnie', 'firegit');
 echo "\nok\n";

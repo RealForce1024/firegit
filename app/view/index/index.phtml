@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <title>FireGit 主页</title>
+</head>
+<body>
+<h1>欢迎来到FireGit主页</h1>
+<ul>
+    <?php foreach($this->v['repos'] as $repo):?>
+        <li><a href="/<?=$this->v['group']?>/<?=$repo['dir']?>"><?=$repo['name']?></a> </li>
+    <?php endforeach?>
+</ul>
+</body>
+</html>
