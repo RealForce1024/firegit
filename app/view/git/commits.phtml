@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <title>Git项目主页</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="//cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<?php
+$prefix = '/' . $this->v['git']['group'] . '/' . $this->v['git']['name'] . '/';
+$branch = $this->v['git']['branch'];
+?>
+<div class="container">
+    <h1><?= $this->v['git']['group'] ?>/<?= $this->v['git']['name'] ?></h1>
+    <ul class="nav nav-tabs">
+        <li role="presentation" class="active"><a href="<?= $prefix ?>commits/<?= $branch ?>">提交</a></li>
+        <li role="presentation"><a href="<?= $prefix ?>branches">分支</a></li>
+    </ul>
+
+    <div class="dropdown">
+        <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+            <?=$branch?>
+            <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+            <?php foreach($this->v['branches'] as $branch):?>
+            <li><a href="<?=$prefix?>/commits/<?=$branch['name']?>"><?=$branch['name']?></a></li>
+            <?php endforeach?>
+        </ul>
+    </div>
+
+    <table class="table table-striped">
+        <?php foreach ($this->v['commits'] as $commit): ?>
+            <tr>
+                <td><a href="<?=$prefix?>/commit/<?=$commit['hash']?>"><?= substr($commit['hash'], 0, 8) ?></a></td>
+                <td><?=$commit['msg']?></td>
+                <td><?=date('Y/m/d H:i', $commit['time'])?></td>
+            </tr>
+        <?php endforeach ?>
+    </table>
+</div>
+</body>
+</html>
