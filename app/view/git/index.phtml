@@ -3,8 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <title>Git项目主页</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="//cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
+    <script src="//cdn.bootcss.com/jquery/1.11.3/jquery.min.js"></script>
+    <script src="//cdn.bootcss.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
 </head>
 <body>
-<h1></h1>
+<?php
+$prefix = '/' . $this->v['git']['group'] . '/' . $this->v['git']['name'] . '/';
+$branch = $this->v['git']['branch'];
+?>
+<div class="container">
+    <h1><?= $this->v['git']['group'] ?>/<?= $this->v['git']['name'] ?></h1>
+    <ul class="nav nav-tabs">
+        <li role="presentation" class="active"><a href="<?=$prefix?>">首页</a></li>
+        <li role="presentation"><a href="<?=$prefix?>commits/<?=$branch?>">提交</a></li>
+        <li role="presentation"><a href="<?=$prefix?>branches">分支</a></li>
+    </ul>
+    <div class="dropdown">
+        <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+            <?=$branch?>
+            <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+            <?php foreach($this->v['branches'] as $branch):?>
+                <li><a href="<?=$prefix?>tree/<?=$branch['name']?>"><?=$branch['name']?></a></li>
+            <?php endforeach?>
+        </ul>
+    </div>
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th colspan="3">
+                文件列表
+            </th>
+        </tr>
+        </thead>
+        <tbody>
+        <?php
+        $pDir = dirname($this->v['git']['path']);
+        if ($pDir):?>
+            <tr>
+                <td><a href="<?= $prefix ?>tree/<?= $this->v['git']['branch'] ?>/<?= $pDir ?>">..</a></td>
+                <td></td>
+                <td></td>
+            </tr>
+        <?php endif ?>
+        <?php foreach ($this->v['nodes']['dirs'] as $node): ?>
+            <tr>
+                <td>
+                    <em class="glyphicon glyphicon-folder-close text-primary"></em>
+                    <a href="<?= $prefix ?>tree/<?= $this->v['git']['branch'] ?>/<?= $node['path'] ?>"><?= $node['name'] ?></a>
+                </td>
+                <td></td>
+                <td></td>
+            </tr>
+        <?php endforeach ?>
+        <?php foreach ($this->v['nodes']['files'] as $node): ?>
+            <tr>
+                <td>
+                    <em class="glyphicon glyphicon-file text-success"></em>
+                    <a href="<?= $prefix ?>blob/<?= $this->v['git']['branch'] ?>/<?= $node['path'] ?>"><?= $node['name'] ?></a>
+                </td>
+                <td></td>
+                <td><?= $node['size'] ?></td>
+            </tr>
+        <?php endforeach ?>
+        </tbody>
+    </table>
+</div>
 </body>
 </html>
