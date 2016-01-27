@@ -24,6 +24,7 @@ class Controller extends \firegit\http\Controller
                 'name' => $this->gitName,
                 'path' => $this->gitPath,
                 'branch' => $this->gitBranch,
+                'url' => 'http://'.$this->request->host.'/'.$this->gitGroup.'/'.$this->gitName.'.git',
             ),
         ));
 

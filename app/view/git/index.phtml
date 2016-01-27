@@ -15,7 +15,11 @@ $prefix = '/' . $this->v['git']['group'] . '/' . $this->v['git']['name'] . '/';
 $branch = $this->v['git']['branch'];
 ?>
 <div class="container">
-    <h1><?= $this->v['git']['group'] ?>/<?= $this->v['git']['name'] ?></h1>
+    <h1>
+        <?= $this->v['git']['group'] ?>/<?= $this->v['git']['name'] ?>
+        <small><?=$this->v['git']['url']?></small>
+    </h1>
+
     <ul class="nav nav-tabs">
         <li role="presentation" class="active"><a href="<?=$prefix?>">首页</a></li>
         <li role="presentation"><a href="<?=$prefix?>commits/<?=$branch?>">提交</a></li>
