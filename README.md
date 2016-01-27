@@ -47,9 +47,8 @@ server {
     }
 
     location /index.php {
-        echo $document_root;
         fastcgi_pass    127.0.0.1:9001;
-        fastcgi_param   SCRIPT_FILENAME $document_root/index.php;
+        fastcgi_param   /home/git/repos/public/index.php;
         include         fastcgi_params;
     }
 }
