@@ -20,6 +20,7 @@ server {
     server_name firegit.com;
     listen      80;
     root        /home/git/repos/;
+    index       index.php;
 
     client_max_body_size 250m;
     
