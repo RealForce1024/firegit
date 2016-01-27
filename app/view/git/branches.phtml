@@ -15,6 +15,7 @@ $branch = $this->v['git']['branch'];
 <div class="container">
     <h1><?= $this->v['git']['group'] ?>/<?= $this->v['git']['name'] ?></h1>
     <ul class="nav nav-tabs">
+        <li role="presentation"><a href="<?=$prefix?>">首页</a></li>
         <li role="presentation"><a href="<?= $prefix ?>commits/<?= $branch ?>">提交</a></li>
         <li role="presentation" class="active"><a href="<?= $prefix ?>branches">分支</a></li>
     </ul>
@@ -22,7 +23,7 @@ $branch = $this->v['git']['branch'];
     <table class="table table-striped">
         <?php foreach ($this->v['branches'] as $branch): ?>
             <tr>
-                <td><a href="<?=$prefix?>/branch/<?=$branch['name']?>"><?= $branch['name'] ?></a></td>
+                <td><a href="<?=$prefix?>tree/<?=$branch['name']?>"><?= $branch['name'] ?></a></td>
                 <td><?=$branch['hash']?></td>
                 <td><?=$branch['msg']?></td>
             </tr>

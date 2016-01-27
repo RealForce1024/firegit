@@ -44,9 +44,12 @@ class Controller extends \firegit\http\Controller
             $dir = './'.$this->gitPath.'/';
         }
         $nodes = $reposite->listFiles($this->gitBranch, $dir);
+
+        $branches = $reposite->listBranches();
         // 获取
         $this->response->set(array(
             'nodes' => $nodes,
+            'branches' => $branches,
         ))->display('git/index.phtml');
     }
 
