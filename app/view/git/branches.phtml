@@ -5,7 +5,7 @@
     <?php foreach ($this->v['branches'] as $branch): ?>
         <tr>
             <td><em class="glyphicon glyphicon-random text-primary"></em> <a
-                    href="<?= $this->v['prefix'] ?>tree/<?= $branch['name'] ?>"><?= $branch['name'] ?></a></td>
+                    href="<?= $this->v['prefix'] ?>commits/<?= $branch['name'] ?>"><?= $branch['name'] ?></a></td>
             <td><?= $branch['hash'] ?></td>
             <td><?= $branch['msg'] ?></td>
             <td>
