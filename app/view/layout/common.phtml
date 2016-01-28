@@ -7,9 +7,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet"/>
     <link href="/static/highlightjs/styles/github.css" rel="stylesheet"/>
+    <link href="/static/artDialog/css/ui-dialog.css" rel="stylesheet"/>
     <script src="/static/jquery/jquery.min.js"></script>
     <script src="/static/bootstrap/js/bootstrap.min.js"></script>
     <script src="/static/highlightjs/highlight.pack.min.js"></script>
+    <script src="/static/artDialog/js/dialog-min.js"></script>
 </head>
 <body>
 <?php
@@ -25,31 +27,126 @@ $this->set('prefix', $prefix);
     </h1>
 
     <ul class="nav nav-tabs">
-        <li role="presentation"<?=($navType == 'home' ? ' class="active"' : '')?>><a href="<?= $prefix ?>">首页</a></li>
-        <li role="presentation"<?=($navType == 'commit' ? ' class="active"' : '')?>><a href="<?= $prefix ?>commits/<?= $branch ?>">提交</a></li>
-        <li role="presentation"<?=($navType == 'branch' ? ' class="active"' : '')?>><a href="<?= $prefix ?>branches">分支</a></li>
+        <li role="presentation"<?= ($navType == 'home' ? ' class="active"' : '') ?>><a href="<?= $prefix ?>">首页</a></li>
+        <li role="presentation"<?= ($navType == 'commit' ? ' class="active"' : '') ?>><a
+                href="<?= $prefix ?>commits/<?= $branch ?>">提交</a></li>
+        <li role="presentation"<?= ($navType == 'branch' ? ' class="active"' : '') ?>><a href="<?= $prefix ?>branches">分支</a>
+        </li>
     </ul>
-    <?php if (isset($this->v['branches']) && count($this->v['branches']) > 1):?>
-    <div class="dropdown">
-        <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown"
-                aria-haspopup="true" aria-expanded="true">
-            <?= $branch ?>
-            <span class="caret"></span>
-        </button>
-        <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
-            <?php foreach ($this->v['branches'] as $branch): ?>
-                <li><a href="<?= $prefix ?>tree/<?= $branch['name'] ?>"><?= $branch['name'] ?></a></li>
-            <?php endforeach ?>
-        </ul>
-    </div>
-    <?php endif?>
+    <?php if (isset($this->v['branches']) && count($this->v['branches']) > 1): ?>
+        <div class="dropdown">
+            <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown"
+                    aria-haspopup="true" aria-expanded="true">
+                <?= $branch ?>
+                <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+                <?php foreach ($this->v['branches'] as $branch): ?>
+                    <li><a href="<?= $prefix ?>tree/<?= $branch['name'] ?>"><?= $branch['name'] ?></a></li>
+                <?php endforeach ?>
+            </ul>
+        </div>
+    <?php endif ?>
 
-    <?=$this->getContent()?>
+    <?= $this->getContent() ?>
 </div>
 <script>
-    $('pre code').each(function(i, block) {
-        hljs.highlightBlock(block);
-    });
+    (function ($) {
+        $('pre code').each(function (i, block) {
+            hljs.highlightBlock(block);
+        });
+        $('*[data-hook]').each(function () {
+
+            var hook = this.getAttribute('data-hook');
+            var option = this.getAttribute('data-hook-option');
+            if (option) {
+                option = eval('(' + option + ')');
+            } else {
+                option = {};
+            }
+            switch (hook) {
+                case 'ajaxable':
+                    doAjaxableHook(this, option);
+                    break;
+            }
+        });
+
+        function doLinkPost(href, option)
+        {
+            $.post(href, function (ret) {
+                if (ret.status == 'firegit.ok') {
+                    dialog({
+                        title:'操作成功',
+                        okValue:'确认',
+                        content: option.okText ? option.okText : '操作成功',
+                        ok: function () {
+                            location.reload();
+                        },
+                        onClose: function () {
+                            location.reload();
+                        }
+                    }).width(300).show();
+                } else {
+                    dialog({
+                        title:'操作失败',
+                        content: '错误码：<code>' + ret.status + '</code>'
+                    }).width(200).show();
+                }
+            });
+        }
+
+        function doAjaxableHook(node, option) {
+            var nodeName = node.nodeName;
+            switch (nodeName) {
+                case 'A':
+                    $(node).on('click', function () {
+                        var confirm = this.getAttribute('data-confirm'), href = this.href;
+                        if (confirm) {
+                            dialog({
+                                content: confirm,
+                                title:'提示',
+                                okValue:'确认',
+                                ok:function() {
+                                    doLinkPost(href, option);
+                                },
+                                cancelValue:'取消',
+                                cancel:function(){}
+                            }).width(300).show();
+                        } else {
+                            doLinkPost(this.href, option);
+                        }
+
+                        return false;
+                    });
+                    break;
+                case 'FORM':
+                    $(node).on('submit', function () {
+                        $.post(this.action, $(this).serializeArray(), function (ret) {
+                            if (ret.status == 'firegit.ok') {
+                                if (window.currentDialog) {
+                                    window.currentDialog.close();
+                                }
+                                dialog({
+                                    title:'操作成功',
+                                    okValue:'确认',
+                                    content: option.okText ? option.okText : '操作成功',
+                                    ok: function () {
+                                        location.reload();
+                                    },
+                                    onClose: function () {
+                                        location.reload();
+                                    }
+                                }).width(300).show();
+                            }
+                        });
+                        return false;
+                    });
+            }
+        }
+    })
+    (jQuery);
+
+
 </script>
 </body>
 </html>

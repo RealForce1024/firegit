@@ -7,7 +7,6 @@ class Bootstrap
     {
         error_reporting(E_ALL);
         ini_set('display_errors', false);
-        ini_set('error_log', LOG_ROOT . '/php_error.log');
 
         $uri = $_SERVER['REQUEST_URI'];
         $_SERVER['REQUEST_RAWURI'] = $uri;
@@ -15,7 +14,7 @@ class Bootstrap
             $dir = GIT_REPO . '/' . $ms[1] . '/' . $ms[2] . '.git';
 
             if (is_dir($dir)) {
-                $arr = explode('/', trim($uri, '/'));
+                $arr = explode('/', trim($uri, '/'), 4);
 
                 // 带有git的自动跳转
                 if (isset($ms[3]) && $ms[3] == '.git') {
@@ -30,7 +29,7 @@ class Bootstrap
                     $_SERVER['GIT_PATH'] = '';
                     $_SERVER['GIT_BRANCH'] = 'master';
                 } else {
-                    if (($len == 3 && $arr[2] == 'branches') || $len > 3) {
+                    if (($len == 3 && ($arr[2] == 'branches' || $arr[2][0] == '_' )) || $len > 3) {
                         if (in_array($arr[2], array(
                             'tree',
                             'blob',
@@ -41,7 +40,9 @@ class Bootstrap
                             'commit',
                             'branches',
                             'branch',
-                            'contributors'
+                            'contributors',
+                            '_new_branch',
+                            '_del_branch',
                         ))) {
                             $_SERVER['GIT_BRANCH'] = isset($arr[3]) ? $arr[3] : 'master';
                             $_SERVER['GIT_PATH'] = implode('/', array_slice($arr, 4));

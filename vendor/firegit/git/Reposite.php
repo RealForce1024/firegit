@@ -93,11 +93,18 @@ class Reposite
         foreach ($lines as $line) {
             $line = ltrim(ltrim($line, '*'));
             $arr = preg_split('#\s+#', $line, 3);
-            $branches[] = array(
+
+            $branch = array(
                 'name' => $arr[0],
                 'hash' => $arr[1],
                 'msg' => $arr[2],
             );
+            if ($arr[0] == 'master') {
+                array_unshift($branches, $branch);
+            } else {
+                $branches[] = $branch;
+            }
+
         }
         return $branches;
     }
@@ -162,9 +169,20 @@ class Reposite
     }
 
     /**
+     * 获取一个提交的统计信息
+     * @param $hash
+     */
+    function statCommit($hash)
+    {
+        chdir($this->dir);
+        $cmd = sprintf('git log -n 1 --stat --oneline');
+    }
+
+    /**
      * 获取变化
      * @param $commitFrom
      * @param null $commitEnd 如果此参数不提供，则认为获取$commitFrom和上一个提交的变化
+     * @return array
      */
     function listDiffs($commitFrom, $commitEnd = null)
     {
@@ -173,7 +191,7 @@ class Reposite
             $commitFrom = $commitFrom.'^';
         }
         chdir($this->dir);
-        $cmd = sprintf('git diff %s..%s', $commitFrom, $commitEnd);
+        $cmd = sprintf('git diff %s..%s ', $commitFrom, $commitEnd);
         exec($cmd, $lines, $code);
         $diffs = array();
         $diff = null;
@@ -262,5 +280,4 @@ class Reposite
         $diffs[] = $diff;
         return $diffs;
     }
-
 }

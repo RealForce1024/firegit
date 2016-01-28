@@ -5,5 +5,10 @@ define('CTL_ROOT', $_root . '/app/ctl/');
 define('VIEW_ROOT', $_root . '/app/view/');
 define('FR_ROOT', $_root . '/vendor/firegit/');
 define('LOG_ROOT', $_root.'/log/');
-define('GIT_REPO', '/home/git/repos/');
+define('BIN_ROOT', $_root.'/bin/');
 define('VENDOR_ROOT', $_root.'/vendor/');
+
+
+define('GIT_REPO', '/home/git/repos/');
+define('GIT_USER', 'git');
+define('GIT_GROUP', 'git');

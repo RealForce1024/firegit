@@ -84,12 +84,26 @@ class Controller extends \firegit\http\Controller
             case 'py':
             case 'gitignore':
             case 'gitmodules':
-                $node['content'] = '<pre><code class="' .
-                    $this->request->ext
+            case 'project':
+            case 'txt':
+            case 'as':
+            case 'classpath':
+            case 'buildpath':
+            case 'sh':
+            case 'py':
+                $node['content'] = '<pre><code class="' . $this->request->ext
                     . '">' . htmlspecialchars($node['content']) . '</code></pre>';
                 break;
             case 'ico':
-                $node['content'] = '<img src="data:image/png;base64,'.base64_encode($node['content']).'"/>';
+            case 'gif':
+            case 'jpg':
+            case 'jpeg':
+            case 'png':
+                $node['content'] = '<img src="data:image/png;base64,' . base64_encode($node['content']) . '"/>';
+                break;
+            default:
+                $node['content'] = '<div class="thumbnail" style="width:600px;height:600px;text-align:center;line-height:600px;font-size:80px;background:#EEE;">' . $this->request->ext . '文件</div>';
+                break;
         }
         $this->response->set('node', $node)->setView('git/blob.phtml');
     }
@@ -130,5 +144,39 @@ class Controller extends \firegit\http\Controller
                 'branches' => $branches,
             ))
             ->setView('git/branches.phtml');
+    }
+
+    /**
+     * 创建新分支
+     */
+    function _new_branch_action()
+    {
+        $orig = $_POST['orig'];
+        $dest = $_POST['dest'];
+
+        \firegit\git\Manager::doTask(
+            'newBranch',
+            $this->gitGroup,
+            $this->gitName,
+            array(
+                'orig' => $orig,
+                'dest' => $dest
+            )
+        );
+    }
+
+    /**
+     * 删除分支
+     */
+    function _del_branch_action()
+    {
+        \firegit\git\Manager::doTask(
+            'delBranch',
+            $this->gitGroup,
+            $this->gitName,
+            array(
+                'branch' => $this->gitBranch,
+            )
+        );
     }
 }

@@ -1,9 +1,76 @@
-<table class="table table-striped">
+<div class="pull-right" style="padding: 6px;">
+    <a id="addNewBranch" class="btn btn-primary"><em class="glyphicon glyphicon-plus"></em>添加分支</a>
+</div>
+<table class="table table-striped table-hover">
     <?php foreach ($this->v['branches'] as $branch): ?>
         <tr>
-            <td><em class="glyphicon glyphicon-random text-primary"></em> <a href="<?= $this->v['prefix'] ?>tree/<?= $branch['name'] ?>"><?= $branch['name'] ?></a></td>
+            <td><em class="glyphicon glyphicon-random text-primary"></em> <a
+                    href="<?= $this->v['prefix'] ?>tree/<?= $branch['name'] ?>"><?= $branch['name'] ?></a></td>
             <td><?= $branch['hash'] ?></td>
             <td><?= $branch['msg'] ?></td>
+            <td>
+                <?php if ($branch['name'] != 'master'): ?>
+                    <a data-hook="ajaxable" href="<?= $this->v['prefix'] ?>_del_branch/<?=$branch['name']?>" data-confirm="你确定要删除该分支吗？">删除</a>
+                <?php endif ?>
+            </td>
         </tr>
     <?php endforeach ?>
 </table>
+
+<div id="dialog" style="display: none">
+    <form data-hook="ajaxable" data-hook-option="{okText:'添加分支成功'}" class="form-horizontal" method="post" action="<?= $this->v['prefix'] ?>_new_branch">
+        <div class="form-group">
+            <label for="iptFrom" class="col-sm-3 control-label">来源分支</label>
+            <div class="col-sm-9">
+                <select class="form-control" name="orig" required>
+                    <option value="">选择来源分支</option>
+                    <?php foreach ($this->v['branches'] as $branch): ?>
+                        <option value="<?= $branch['name'] ?>"><?= $branch['name'] ?></option>
+                    <?php endforeach ?>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="iptFrom" class="col-sm-3 control-label">新分支</label>
+            <div class="col-sm-9">
+                <input type="text" required min="6" maxlength="30" class="form-control" id="iptFrom" placeholder="新分支"
+                       name="dest"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-9 col-sm-offset-3">
+                <input type="submit" value="添加" class="btn btn-lg btn-primary"/>
+            </div>
+
+        </div>
+    </form>
+</div>
+
+<script>
+    $('#addNewBranch').on('click', function () {
+        window.currentDialog = dialog({
+            content: $('#dialog'),
+            title: '添加分支'
+        }).width(400).show();
+    });
+//    $('#formNewBranch').on('submit', function () {
+//        $.post(this.action, $(this).serializeArray(), function (ret) {
+//            if (ret.status == 'firegit.ok') {
+//                if (d) {
+//                    d.close();
+//                }
+//                dialog({
+//                    content: '分支创建成功',
+//                    ok: function () {
+//                        location.reload();
+//                    },
+//                    onclose: function () {
+//                        location.reload();
+//                    }
+//                }).show();
+//            }
+//        });
+//        return false;
+//    });
+
+</script>

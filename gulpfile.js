@@ -14,5 +14,12 @@ gulp.task('dist', function () {
         .pipe(gulp.dest('public/static/highlightjs'));
 
     gulp.src('bower_components/highlightjs/styles/*')
-        .pipe(gulp.dest('public/static/highlightjs/styles'))
+        .pipe(gulp.dest('public/static/highlightjs/styles'));
+
+    gulp.src('bower_components/artDialog/dist/*')
+        .pipe(gulp.dest('public/static/artDialog/js/'));
+
+    gulp.src('bower_components/artDialog/css/*')
+        .pipe(gulp.dest('public/static/artDialog/css/'));
+
 });

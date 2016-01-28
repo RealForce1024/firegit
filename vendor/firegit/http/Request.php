@@ -31,7 +31,9 @@ class Request
 
 
         $this->ext = $ext = strtolower(pathinfo($this->rawUri, PATHINFO_EXTENSION));
-        $removeExt = true;
+        if ($this->method == 'POST' && !$ext) {
+            $this->ext = $ext = 'json';
+        }
         switch ($ext) {
             case 'json':
                 $this->contentType = 'Content-type: application/json; charset=' . $this->charset;
@@ -59,7 +61,6 @@ class Request
                 $this->contentType = 'Content-type: text/html; charset=' . $this->charset;
                 break;
             default:
-                $removeExt = false;
                 $this->contentType = 'Content-type: text/plain; charset=' . $this->charset;
                 break;
         }

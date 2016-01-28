@@ -89,12 +89,13 @@ class Response
     {
         if ($this->ex) {
             $this->outputs = array(
+                'status' => $this->status,
                 'msg' => $this->ex->getMessage(),
                 'trace' => $this->ex->getTraceAsString()
             );
         }
         $output = array(
-            'ret' => $this->status,
+            'status' => $this->status,
             'data' => $this->outputs,
         );
         if ($this->tpl) {

@@ -51,7 +51,7 @@
         <li>
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    <h5><?= $file['from']['path'] ?></h5>
+                    <h5><em class="glyphicon glyphicon-file"></em><?= $file['from']['path'] ?></h5>
                 </div>
                 <div class="panel-body">
                     <table class="diffs">
@@ -69,7 +69,7 @@
                                         $className .= ' block-from';
                                     } else {
                                         if (!isset($block['from'])) {
-                                            $className .= ' block-from';
+                                            $className .= ' block-to';
                                         }
                                     }
                                     ?>

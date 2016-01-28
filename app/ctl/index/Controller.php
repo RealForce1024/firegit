@@ -15,6 +15,6 @@ class Controller extends \firegit\http\Controller
                 'group' => $group,
                 'repos' =>$repos,
             ))
-            ->display('index/index.phtml');
+            ->setView('index/index.phtml');
     }
 }
