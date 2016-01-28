@@ -250,12 +250,18 @@ class Reposite
         $blocks = null;
         $fromLine = 0;
         $toLine = 0;
+//        var_dump($lines);
         for ($i = 0, $l = count($lines); $i < $l; $i++) {
             $line = $lines[$i];
             if (strpos($line, 'diff --git ') === 0) {
-                if ($diff !== null) {
+                if ($diff) {
+                    if ($blocks) {
+                        $diff['blocks'][] = $blocks;
+                        $blocks = array();
+                    }
                     $diffs[] = $diff;
                 }
+
                 $diff = array(
                     'from' => array(),
                     'to' => array(),
@@ -317,9 +323,6 @@ class Reposite
                                     'line' => $line,
                                 );
                                 break;
-                            case '\\':
-
-                                break;
                             default:
                                 $fromLine++;
                                 $toLine++;
@@ -341,7 +344,9 @@ class Reposite
                 }
             }
         }
-        $diff['blocks'][] = $blocks;
+        if (!empty($blocks)) {
+            $diff['blocks'][] = $blocks;
+        }
         $diffs[] = $diff;
         return $diffs;
     }
