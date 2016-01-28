@@ -1,0 +1,28 @@
+{
+  "name": "firegit",
+  "description": "FireGit - A Git Manage Platform Based on Php.",
+  "main": "public/index.php",
+  "authors": [
+    "ronnie"
+  ],
+  "license": "ISC",
+  "keywords": [
+    "firegit",
+    "git",
+    "php"
+  ],
+  "homepage": "https://github.com/comdeng/firegit",
+  "moduleType": [],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "~1.12.0",
+    "bootstrap": "~3.3.6",
+    "highlightjs": "~9.1.0"
+  }
+}

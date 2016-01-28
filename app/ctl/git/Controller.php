@@ -111,6 +111,15 @@ class Controller extends \firegit\http\Controller
             ->setView('git/commits.phtml');
     }
 
+    function commit_action()
+    {
+        $reposite = new Reposite($this->gitGroup, $this->gitName);
+        $diffs = $reposite->listDiffs($this->gitBranch);
+        $this->response->set(array(
+            'diffs' => $diffs,
+        ))->setView('git/commit.phtml');
+    }
+
     function branches_action()
     {
         $reposite = new Reposite($this->gitGroup, $this->gitName);

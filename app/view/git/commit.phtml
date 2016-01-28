@@ -1,0 +1,89 @@
+<style>
+    .diffs {
+        width: 100%;
+    }
+    .diffs td{
+        height:20px;
+        line-height: 20px;
+    }
+    .diffs tr:hover td {
+        background: #d7e0e3;
+    }
+    .block-from td.line-from, .block-from td.line-to {
+        background-color: #ffdddd;
+        border-color:#f1c0c0;
+    }
+    .block-from td.code{
+        background-color: #ffecec;
+    }
+    .block-to td.line-from, .block-to td.line-to {
+        background-color: #dbffdb;
+        border-color:#c1e9c1;
+    }
+    .block-to td{
+        background-color: #eaffea;
+    }
+    .block-start td {
+        color:#999;
+    }
+    .line-from, .line-to {
+        width: 40px;
+        font-family: Consolas;
+        font-size:10px;
+        text-align: right;
+        padding:0 2px;
+        font-style: normal;
+        color: gray;
+        border-right: solid 1px #ccc;
+    }
+
+    .code {
+        padding-left: 5px;
+        font-family: Consolas;
+        font-size:12px;
+    }
+</style>
+<h4><?= $this->v['git']['branch'] ?></h4>
+
+
+<ul class="list-unstyled">
+    <?php foreach ($this->v['diffs'] as $file): ?>
+        <li>
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h5><?= $file['from']['path'] ?></h5>
+                </div>
+                <div class="panel-body">
+                    <table class="diffs">
+                        <?php foreach ($file['blocks'] as $blocks): ?>
+                            <?php foreach ($blocks as $key => $block): ?>
+                                <?php if ($key == 0): ?>
+                                    <tr class="block block-start">
+                                        <td class="line-from">...</td>
+                                        <td class="line-to">...</td>
+                                        <td class="code"><?= htmlentities($block['line']) ?></td>
+                                    </tr>
+                                <?php else:
+                                    $className = 'block';
+                                    if (!isset($block['to'])) {
+                                        $className .= ' block-from';
+                                    } else {
+                                        if (!isset($block['from'])) {
+                                            $className .= ' block-from';
+                                        }
+                                    }
+                                    ?>
+                                    <tr class="<?=$className?>">
+                                        <td class="line-from"><?= (isset($block['from']) ? $block['from'] : '&nbsp;') ?></td>
+                                        <td class="line-to"><?= (isset($block['to']) ? $block['to'] : '&nbsp;') ?></td>
+                                        <td class="code"><?= str_replace(' ', '&nbsp;', htmlentities($block['line'])) ?></td>
+                                    </tr>
+                                <?php endif ?>
+                            <?php endforeach ?>
+                        <?php endforeach ?>
+                    </table>
+                </div>
+            </div>
+        </li>
+    <?php endforeach ?>
+</ul>
