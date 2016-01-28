@@ -10,7 +10,9 @@
             <td><?= $branch['msg'] ?></td>
             <td>
                 <?php if ($branch['name'] != 'master'): ?>
-                    <a data-hook="ajaxable" href="<?= $this->v['prefix'] ?>_del_branch/<?=$branch['name']?>" data-confirm="你确定要删除该分支吗？">删除</a>
+                    <a data-hook="ajaxable"
+                       href="<?= $this->v['prefix'] ?>_del_branch/<?=$branch['name']?>"
+                       data-confirm="你确定要删除分支<code><?=$branch['name']?></code>吗？">删除</a>
                 <?php endif ?>
             </td>
         </tr>
@@ -53,24 +55,6 @@
             title: '添加分支'
         }).width(400).show();
     });
-//    $('#formNewBranch').on('submit', function () {
-//        $.post(this.action, $(this).serializeArray(), function (ret) {
-//            if (ret.status == 'firegit.ok') {
-//                if (d) {
-//                    d.close();
-//                }
-//                dialog({
-//                    content: '分支创建成功',
-//                    ok: function () {
-//                        location.reload();
-//                    },
-//                    onclose: function () {
-//                        location.reload();
-//                    }
-//                }).show();
-//            }
-//        });
-//        return false;
-//    });
-
+    window.errMap = window.errMap || {};
+    errMap['firegit.illegalBranch'] = '分支命名格式不对：<?=GIT_BRANCH_RULE?>'
 </script>

@@ -1,4 +1,28 @@
-<h4><?=$this->v['git']['path']?></h4>
-<div class="content">
-    <?=$this->v['node']['content']?>
+<br/>
+<div class="panel panel-info">
+    <div class="panel-heading">
+        <div class="panel-title row">
+
+            <div class="col-md-6">
+                <small class="glyphicon glyphicon-file text-info"></small>
+                <?= $this->v['git']['path'] ?>
+                <small class="glyphicon glyphicon-info-sign"></small>
+                <small><?=$this->v['node']['size']?></small>
+            </div>
+
+            <div class="col-md-3 col-md-offset-3">
+                <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
+                    <div class="btn-group" role="group" aria-label="First group" style="font-size:12px;">
+                        <a class="btn btn-default" href="<?=$this->v['prefix']?>edit/<?=$this->v['node']['path']?>"><em class="glyphicon glyphicon-edit"></em>编辑</a>
+                        <a class="btn btn-default" href="<?=$this->v['prefix']?>raw/<?=$this->v['git']['branch']?>/<?=$this->v['node']['path']?>" target="_blank">原始</a>
+                        <a class="btn btn-default">追责</a>
+                        <a class="btn btn-default"><em class="glyphicon glyphicon-time"></em> 历史</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="panel-content" style="padding:10px 10px 0;">
+        <?= $this->v['node']['content'] ?>
+    </div>
 </div>

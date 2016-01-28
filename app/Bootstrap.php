@@ -14,7 +14,7 @@ class Bootstrap
             $dir = GIT_REPO . '/' . $ms[1] . '/' . $ms[2] . '.git';
 
             if (is_dir($dir)) {
-                $arr = explode('/', trim($uri, '/'), 4);
+                $arr = explode('/', trim($uri, '/'));
 
                 // 带有git的自动跳转
                 if (isset($ms[3]) && $ms[3] == '.git') {
@@ -44,8 +44,18 @@ class Bootstrap
                             '_new_branch',
                             '_del_branch',
                         ))) {
-                            $_SERVER['GIT_BRANCH'] = isset($arr[3]) ? $arr[3] : 'master';
-                            $_SERVER['GIT_PATH'] = implode('/', array_slice($arr, 4));
+
+                            if (in_array($arr[2], array('tree', 'blob', 'raw'))) {
+                                $_SERVER['GIT_BRANCH'] = $arr[3];
+                                $_SERVER['GIT_PATH'] = implode('/', array_slice($arr, 4));
+                            } else {
+                                $_SERVER['GIT_BRANCH'] = implode('/', array_slice($arr, 3));
+                                $_SERVER['GIT_PATH'] = '';
+                            }
+                            if (!$_SERVER['GIT_BRANCH']) {
+                                $_SERVER['GIT_BRANCH'] = 'master';
+                            }
+
                             $_SERVER['REQUEST_URI'] = '/git/' . $arr[2];
                         }
                     }

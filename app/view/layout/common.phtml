@@ -12,6 +12,14 @@
     <script src="/static/bootstrap/js/bootstrap.min.js"></script>
     <script src="/static/highlightjs/highlight.pack.min.js"></script>
     <script src="/static/artDialog/js/dialog-min.js"></script>
+    <script src="/static/lazyload/jquery.lazyload.js"></script>
+    <script>
+        var errMap = {
+            'firegit.u_notfound': '该页面不存在或者已经被删除',
+            'firegit.u_login': '您尚未登录',
+            'firegit.u_power': '您没有操作的权限'
+        };
+    </script>
 </head>
 <body>
 <?php
@@ -33,7 +41,7 @@ $this->set('prefix', $prefix);
         <li role="presentation"<?= ($navType == 'branch' ? ' class="active"' : '') ?>><a href="<?= $prefix ?>branches">分支</a>
         </li>
     </ul>
-    <?php if (isset($this->v['branches']) && count($this->v['branches']) > 1): ?>
+    <?php if (empty($this->v['notShowNav']) && isset($this->v['branches']) && count($this->v['branches']) > 1): ?>
         <div class="dropdown">
             <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown"
                     aria-haspopup="true" aria-expanded="true">
@@ -42,7 +50,7 @@ $this->set('prefix', $prefix);
             </button>
             <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
                 <?php foreach ($this->v['branches'] as $branch): ?>
-                    <li><a href="<?= $prefix ?>tree/<?= $branch['name'] ?>"><?= $branch['name'] ?></a></li>
+                    <li><a href="<?= $prefix ?><?=(isset($this->v['branchType']) ? $this->v['branchType'] : 'tree')?>/<?= $branch['name'] ?>"><?= $branch['name'] ?></a></li>
                 <?php endforeach ?>
             </ul>
         </div>
@@ -52,6 +60,7 @@ $this->set('prefix', $prefix);
 </div>
 <script>
     (function ($) {
+        $('*[data-original]').lazyload();
         $('pre code').each(function (i, block) {
             hljs.highlightBlock(block);
         });
@@ -71,13 +80,21 @@ $this->set('prefix', $prefix);
             }
         });
 
-        function doLinkPost(href, option)
-        {
-            $.post(href, function (ret) {
+        /**
+         * 执行post连接请求
+         * @param href
+         * @param option
+         * @param data
+         */
+        function doLinkPost(href, option, data) {
+            $.post(href, data, function (ret) {
+                if (window.currentDialog) {
+                    window.currentDialog.close();
+                }
                 if (ret.status == 'firegit.ok') {
                     dialog({
-                        title:'操作成功',
-                        okValue:'确认',
+                        title: '操作成功',
+                        okValue: '确认',
                         content: option.okText ? option.okText : '操作成功',
                         ok: function () {
                             location.reload();
@@ -85,12 +102,24 @@ $this->set('prefix', $prefix);
                         onClose: function () {
                             location.reload();
                         }
-                    }).width(300).show();
+                    }).width(400).show();
                 } else {
+                    var detail = '';
+                    if (window.errMap) {
+                        if (ret.status in window.errMap) {
+                            detail = window.errMap[ret.status];
+                        }
+                    }
+                    var content = '<label>错误码：</label><code>' + ret.status + '</code>';
+                    if (detail) {
+                        content += '<br/><label>&nbsp;&nbsp;说明：</label><span>' + detail + '</span>';
+                    }
                     dialog({
-                        title:'操作失败',
-                        content: '错误码：<code>' + ret.status + '</code>'
-                    }).width(200).show();
+                        title: '操作失败',
+                        content: content,
+                        okValue:'确定',
+                        ok:function(){}
+                    }).width(400).show();
                 }
             });
         }
@@ -104,13 +133,14 @@ $this->set('prefix', $prefix);
                         if (confirm) {
                             dialog({
                                 content: confirm,
-                                title:'提示',
-                                okValue:'确认',
-                                ok:function() {
+                                title: '提示',
+                                okValue: '确认',
+                                ok: function () {
                                     doLinkPost(href, option);
                                 },
-                                cancelValue:'取消',
-                                cancel:function(){}
+                                cancelValue: '取消',
+                                cancel: function () {
+                                }
                             }).width(300).show();
                         } else {
                             doLinkPost(this.href, option);
@@ -121,30 +151,12 @@ $this->set('prefix', $prefix);
                     break;
                 case 'FORM':
                     $(node).on('submit', function () {
-                        $.post(this.action, $(this).serializeArray(), function (ret) {
-                            if (ret.status == 'firegit.ok') {
-                                if (window.currentDialog) {
-                                    window.currentDialog.close();
-                                }
-                                dialog({
-                                    title:'操作成功',
-                                    okValue:'确认',
-                                    content: option.okText ? option.okText : '操作成功',
-                                    ok: function () {
-                                        location.reload();
-                                    },
-                                    onClose: function () {
-                                        location.reload();
-                                    }
-                                }).width(300).show();
-                            }
-                        });
+                        doLinkPost(this.action, option, $(this).serializeArray());
                         return false;
                     });
             }
         }
-    })
-    (jQuery);
+    })(jQuery);
 
 
 </script>

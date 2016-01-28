@@ -22,4 +22,6 @@ gulp.task('dist', function () {
     gulp.src('bower_components/artDialog/css/*')
         .pipe(gulp.dest('public/static/artDialog/css/'));
 
+    gulp.src('bower_components/jquery_lazyload/*.js')
+        .pipe(gulp.dest('public/static/lazyload/'));
 });

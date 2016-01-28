@@ -29,7 +29,6 @@ class Request
         $this->method = $_SERVER['REQUEST_METHOD'];
         $this->host = $_SERVER['HTTP_HOST'];
 
-
         $this->ext = $ext = strtolower(pathinfo($this->rawUri, PATHINFO_EXTENSION));
         if ($this->method == 'POST' && !$ext) {
             $this->ext = $ext = 'json';
@@ -50,7 +49,7 @@ class Request
             case 'jpeg':
             case 'gif':
             case 'png':
-                $this->contentType = 'Content-type: application/' . $ext;
+                $this->contentType = 'Content-type: image/' . $ext;
                 break;
             case 'xml':
             case 'css':

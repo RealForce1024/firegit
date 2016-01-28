@@ -60,6 +60,7 @@ class Controller extends \firegit\http\Controller
         $this->response->set(array(
             'nodes' => $nodes,
             'branches' => $branches,
+            'branchType' => 'tree',
         ))->setView('git/index.phtml');
     }
 
@@ -91,6 +92,7 @@ class Controller extends \firegit\http\Controller
             case 'buildpath':
             case 'sh':
             case 'py':
+            case 'phtml':
                 $node['content'] = '<pre><code class="' . $this->request->ext
                     . '">' . htmlspecialchars($node['content']) . '</code></pre>';
                 break;
@@ -108,6 +110,13 @@ class Controller extends \firegit\http\Controller
         $this->response->set('node', $node)->setView('git/blob.phtml');
     }
 
+    function raw_action()
+    {
+        $reposite = new Reposite($this->gitGroup, $this->gitName);
+        $node = $reposite->getBlob($this->gitBranch, $this->gitPath);
+        $this->response->setRaw($node['content']);
+    }
+
     function commits_action()
     {
         $fromCommit = isset($_GET['from']) ? $_GET['from'] : $this->gitBranch;
@@ -121,6 +130,7 @@ class Controller extends \firegit\http\Controller
                 'navType' => 'commit',
                 'commits' => $commits,
                 'branches' => $branches,
+                'branchType' => 'commits',
             ))
             ->setView('git/commits.phtml');
     }
@@ -129,8 +139,11 @@ class Controller extends \firegit\http\Controller
     {
         $reposite = new Reposite($this->gitGroup, $this->gitName);
         $diffs = $reposite->listDiffs($this->gitBranch);
+        $stats = $reposite->statCommit($this->gitBranch);
         $this->response->set(array(
             'diffs' => $diffs,
+            'navType' => 'commit',
+            'commit' => $stats,
         ))->setView('git/commit.phtml');
     }
 
@@ -142,6 +155,7 @@ class Controller extends \firegit\http\Controller
             ->set(array(
                 'navType' => 'branch',
                 'branches' => $branches,
+                'notShowNav' => true,
             ))
             ->setView('git/branches.phtml');
     }
@@ -153,6 +167,10 @@ class Controller extends \firegit\http\Controller
     {
         $orig = $_POST['orig'];
         $dest = $_POST['dest'];
+
+        if (!preg_match(GIT_BRANCH_RULE, $dest)) {
+            throw new \Exception('firegit.illegalBranch');
+        }
 
         \firegit\git\Manager::doTask(
             'newBranch',

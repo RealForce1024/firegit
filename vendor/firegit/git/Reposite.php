@@ -1,7 +1,7 @@
 <?php
 namespace firegit\git;
 
-use firegit\git\Util;
+use \firegit\git\Util;
 
 class Reposite
 {
@@ -175,7 +175,59 @@ class Reposite
     function statCommit($hash)
     {
         chdir($this->dir);
-        $cmd = sprintf('git log -n 1 --stat --oneline');
+        $cmd = sprintf('git show %s  --stat --oneline --format="%s"', $hash, '%h %ct %an %s');
+        exec($cmd, $lines, $code);
+        if ($code) {
+            return false;
+        }
+        $line = array_shift($lines);
+        $arr = explode(' ', $line);
+        $ret = array(
+            'hash' => $arr[0],
+            'time' => $arr[1],
+            'author' => $arr[2],
+            'msg' => isset($arr[3]) ? $arr[3] : '',
+            'files' => array()
+        );
+        array_shift($lines);
+        $line = array_pop($lines);
+        // 2 files changed, 5 insertions(+), 6 deletions(-)
+        $arr = array_map('trim', explode(',', $line));
+        foreach ($arr as $a) {
+            list($num, $desc) = explode(' ', $a, 2);
+            switch ($desc) {
+                case 'files changed':
+                    $ret['total'] = $num;
+                    break;
+                case 'insertions(+)':
+                    $ret['add'] = $num;
+                    break;
+                case 'deletions(-)':
+                    $ret['delete'] = $num;
+                    break;
+            }
+        }
+        foreach ($lines as $line) {
+            list($file, $stat) = array_map('trim', explode('|', $line, 2));
+            list($num, $changes) = explode(' ', $stat, 2);
+            if ($num == 'Bin') {
+                list($from, $to) = explode(' -> ', $changes, 2);
+                $ret['files'][$file] = array(
+                    'type' => 'bin',
+                    'from' => $from,
+                    'to' => $to,
+                );
+            } else {
+                $stats = count_chars($changes, 1);
+                $ret['files'][$file] = array(
+                    'type' => 'text',
+                    'total' => $num,
+                    'add' => isset($stats[43]) ? $stats[43] : 0,
+                    'delete' => isset($stats[45]) ? $stats[45] : 0,
+                );
+            }
+        }
+        return $ret;
     }
 
     /**
@@ -188,7 +240,7 @@ class Reposite
     {
         if ($commitEnd === null) {
             $commitEnd = $commitFrom;
-            $commitFrom = $commitFrom.'^';
+            $commitFrom = $commitFrom . '^';
         }
         chdir($this->dir);
         $cmd = sprintf('git diff %s..%s ', $commitFrom, $commitEnd);
@@ -198,7 +250,7 @@ class Reposite
         $blocks = null;
         $fromLine = 0;
         $toLine = 0;
-        for($i = 0, $l = count($lines); $i < $l; $i++) {
+        for ($i = 0, $l = count($lines); $i < $l; $i++) {
             $line = $lines[$i];
             if (strpos($line, 'diff --git ') === 0) {
                 if ($diff !== null) {
@@ -216,63 +268,76 @@ class Reposite
                 // 查找下一行
                 $i++;
                 $line = $lines[$i];
+                if (strncmp($line, 'index', 5) !== 0) {
+                    $i++;
+                    $line = $lines[$i];
+                }
                 $arr = preg_split('#(\s|\.\.)#', $line);
                 $diff['from']['hash'] = $arr[1];
                 $diff['to']['hash'] = $arr[2];
 
                 // 跨越两行
-                $i+=2;
-            } else if (strpos($line, '@@ -') === 0) {
-                if ($blocks) {
-                    $diff['blocks'][] = $blocks;
-                }
-                $blocks = array();
-
-                $arr = explode(' ', $line, 5);
-                list($fromLine) = explode(',', substr($arr[1], 1));
-                list($toLine) = explode(',', substr($arr[2], 1));
-                $blocks[] = array(
-                    'from' => $fromLine,
-                    'to' => $toLine,
-                    'line' => $line,
-                );
-            } else {
-                if ($line) {
-                    switch ($line[0]) {
-                        case '-': // 表示是起始commit的文件
-                            $fromLine++;
-                            $blocks[] = array(
-                                'from' => $fromLine,
-                                'line' => $line
-                            );
-                            break;
-                        case '+':
-                            $toLine++;
-                            $blocks[] = array(
-                                'to' => $toLine,
-                                'line' => $line,
-                            );
-                            break;
-                        case '\\':
-
-                            break;
-                        default:
-                            $fromLine++;
-                            $toLine++;
-                            $blocks[] = array(
-                                'from' => $fromLine,
-                                'to' => $toLine,
-                                'line' => $line,
-                            );
-                    }
+                $i++;
+                $line = $lines[$i];
+                if (strncmp($line, 'Binary', 6) === 0) {
+                    $diff['type'] = 'bin';
                 } else {
-                    $fromLine++;
-                    $toLine++;
+                    $diff['type'] = 'file';
+                    $i++;
+                }
+            } else {
+                if (strpos($line, '@@ -') === 0) {
+                    if ($blocks) {
+                        $diff['blocks'][] = $blocks;
+                    }
+                    $blocks = array();
+
+                    $arr = explode(' ', $line, 5);
+                    list($fromLine) = explode(',', substr($arr[1], 1));
+                    list($toLine) = explode(',', substr($arr[2], 1));
                     $blocks[] = array(
                         'from' => $fromLine,
                         'to' => $toLine,
                         'line' => $line,
                     );
+                } else {
+                    if ($line) {
+                        switch ($line[0]) {
+                            case '-': // 表示是起始commit的文件
+                                $fromLine++;
+                                $blocks[] = array(
+                                    'from' => $fromLine,
+                                    'line' => $line
+                                );
+                                break;
+                            case '+':
+                                $toLine++;
+                                $blocks[] = array(
+                                    'to' => $toLine,
+                                    'line' => $line,
+                                );
+                                break;
+                            case '\\':
+
+                                break;
+                            default:
+                                $fromLine++;
+                                $toLine++;
+                                $blocks[] = array(
+                                    'from' => $fromLine,
+                                    'to' => $toLine,
+                                    'line' => $line,
+                                );
+                        }
+                    } else {
+                        $fromLine++;
+                        $toLine++;
+                        $blocks[] = array(
+                            'from' => $fromLine,
+                            'to' => $toLine,
+                            'line' => $line,
+                        );
+                    }
                 }
             }
         }

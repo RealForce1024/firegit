@@ -2,36 +2,44 @@
     .diffs {
         width: 100%;
     }
-    .diffs td{
-        height:20px;
+
+    .diffs td {
+        height: 20px;
         line-height: 20px;
     }
+
     .diffs tr:hover td {
         background: #d7e0e3;
     }
+
     .block-from td.line-from, .block-from td.line-to {
         background-color: #ffdddd;
-        border-color:#f1c0c0;
+        border-color: #f1c0c0;
     }
-    .block-from td.code{
+
+    .block-from td.code {
         background-color: #ffecec;
     }
+
     .block-to td.line-from, .block-to td.line-to {
         background-color: #dbffdb;
-        border-color:#c1e9c1;
+        border-color: #c1e9c1;
     }
-    .block-to td{
+
+    .block-to td {
         background-color: #eaffea;
     }
+
     .block-start td {
-        color:#999;
+        color: #999;
     }
+
     .line-from, .line-to {
         width: 40px;
         font-family: Consolas;
-        font-size:10px;
+        font-size: 10px;
         text-align: right;
-        padding:0 2px;
+        padding: 0 2px;
         font-style: normal;
         color: gray;
         border-right: solid 1px #ccc;
@@ -40,50 +48,87 @@
     .code {
         padding-left: 5px;
         font-family: Consolas;
-        font-size:12px;
+        font-size: 12px;
     }
 </style>
-<h4><?= $this->v['git']['branch'] ?></h4>
+<h2><?= $this->v['commit']['msg'] ?></h2>
+<label class="label label-info">作者</label><span><?= $this->v['commit']['author'] ?></span>
+<br/>
+<label class="label label-info">时间</label><span><?= date('Y/m/d H:i:s', $this->v['commit']['time']) ?></span>
+<hr/>
+<div class="row">
+    <div class="col-md-8">
+        有<?= count($this->v['commit']['files']) ?>个文件收到影响，<span class="text-success">增加了<?= $this->v['commit']['add'] ?>
+            行</span>，<span class="text-danger">删除了<?= $this->v['commit']['delete'] ?>行</span>。
+    </div>
+    <div class="col-md-4">
 
+    </div>
+</div>
 
 <ul class="list-unstyled">
-    <?php foreach ($this->v['diffs'] as $file): ?>
+    <?php foreach ($this->v['diffs'] as $key => $file): ?>
         <li>
+            <?php if($key > 20):?>
+                由于更新的文件过多，此处只显示前20个文件...
+            <?php
+                break;
+            endif?>
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <h5><em class="glyphicon glyphicon-file"></em><?= $file['from']['path'] ?></h5>
                 </div>
                 <div class="panel-body">
-                    <table class="diffs">
-                        <?php foreach ($file['blocks'] as $blocks): ?>
-                            <?php foreach ($blocks as $key => $block): ?>
-                                <?php if ($key == 0): ?>
-                                    <tr class="block block-start">
-                                        <td class="line-from">...</td>
-                                        <td class="line-to">...</td>
-                                        <td class="code"><?= htmlentities($block['line']) ?></td>
-                                    </tr>
-                                <?php else:
-                                    $className = 'block';
-                                    if (!isset($block['to'])) {
-                                        $className .= ' block-from';
-                                    } else {
-                                        if (!isset($block['from'])) {
-                                            $className .= ' block-to';
+                    <?php if ($file['type'] == 'file'): ?>
+                        <table class="diffs">
+                            <?php foreach ($file['blocks'] as $blocks): ?>
+                                <?php foreach ($blocks as $key => $block): ?>
+                                    <?php if ($key == 0): ?>
+                                        <tr class="block block-start">
+                                            <td class="line-from">...</td>
+                                            <td class="line-to">...</td>
+                                            <td class="code"><?= htmlentities($block['line']) ?></td>
+                                        </tr>
+                                    <?php else:
+                                        $className = 'block';
+                                        if (!isset($block['to'])) {
+                                            $className .= ' block-from';
+                                        } else {
+                                            if (!isset($block['from'])) {
+                                                $className .= ' block-to';
+                                            }
                                         }
-                                    }
-                                    ?>
-                                    <tr class="<?=$className?>">
-                                        <td class="line-from"><?= (isset($block['from']) ? $block['from'] : '&nbsp;') ?></td>
-                                        <td class="line-to"><?= (isset($block['to']) ? $block['to'] : '&nbsp;') ?></td>
-                                        <td class="code"><?= str_replace(' ', '&nbsp;', htmlentities($block['line'])) ?></td>
-                                    </tr>
-                                <?php endif ?>
+                                        ?>
+                                        <tr class="<?= $className ?>">
+                                            <td class="line-from"><?= (isset($block['from']) ? $block['from'] : '&nbsp;') ?></td>
+                                            <td class="line-to"><?= (isset($block['to']) ? $block['to'] : '&nbsp;') ?></td>
+                                            <td class="code"><?= str_replace(' ', '&nbsp;',
+                                                    htmlentities($block['line'])) ?></td>
+                                        </tr>
+                                    <?php endif ?>
+                                <?php endforeach ?>
                             <?php endforeach ?>
-                        <?php endforeach ?>
-                    </table>
+                        </table>
+                    <?php elseif ($file['type'] == 'bin'): ?>
+                        <?php
+                        $ext = strtolower(pathinfo($file['to']['path'], PATHINFO_EXTENSION));
+                        switch ($ext) {
+                            case 'jpg':
+                            case 'png':
+                            case 'gif':
+                                echo '<img data-original="' . $this->v['prefix'] . 'raw/' . $this->v['git']['branch'] . $file['to']['path'] . '"/>';
+                                break;
+                        }
+                        ?>
+                    <?php endif ?>
                 </div>
             </div>
+
         </li>
     <?php endforeach ?>
 </ul>
+<footer class="text-center">
+    <hr/>
+    copyright@firegit.com<br/>
+    <em><?=date('Y/m/d H:i:s')?></em>
+</footer>

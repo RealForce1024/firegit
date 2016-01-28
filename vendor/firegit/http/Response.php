@@ -18,8 +18,10 @@ class Response
      */
     function setException($ex)
     {
+        $msg = $ex->getMessage();
+        $arr = explode(' ', $msg);
+        $this->status = $arr[0];
         $this->ex = $ex;
-        $this->status = 'firegit.fatal';
         return $this;
     }
 
@@ -54,7 +56,7 @@ class Response
             if (!$layout) {
                 $this->layout = '';
             } else {
-                $this->layout = VIEW_ROOT. $layout;
+                $this->layout = VIEW_ROOT . $layout;
             }
         }
         return $this;
@@ -67,7 +69,7 @@ class Response
      */
     function setLayout($layout)
     {
-        $this->layout = VIEW_ROOT.$layout;
+        $this->layout = VIEW_ROOT . $layout;
         return $this;
     }
 
@@ -100,7 +102,7 @@ class Response
         );
         if ($this->tpl) {
             $ext = 'html';
-            $req->contentType = 'Content-type:text/html; charset='.$req->charset;
+            $req->contentType = 'Content-type:text/html; charset=' . $req->charset;
         } else {
             $ext = $req->ext;
         }
@@ -129,11 +131,15 @@ class Response
             case 'jpeg':
             case 'gif':
             case 'png':
-                header('Content-type: application/png');
+            case 'ico':
                 echo $this->raw;
                 break;
             default:
-                print_r($output);
+                if ($this->raw) {
+                    echo $this->raw;
+                } else {
+                    print_r($output);
+                }
                 break;
         }
     }
