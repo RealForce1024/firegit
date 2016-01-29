@@ -14,14 +14,15 @@
             ;
 
         for (var i = 0; i < args.length; i++) {
-            var arr = args[i].split(/\s+/), l = arr.length;
-            arr[l - 1] = arr[l - 1].replace('@', '/static/SyntaxHighlighter/js/shBrush') + '.js';
-            result.push(arr);
+            //var arr = args[i].split(/\s+/), l = arr.length;
+            //arr[l - 1] = arr[l - 1].replace('@', '/static/SyntaxHighlighter/js/shBrush') + '.js';
+            //result.push(arr);
+            args[i] = args[i].replace('@', '/static/SyntaxHighlighter/js/shBrush') + '.js';
+            result.push(args[i]);
         }
         return result;
     };
 
-    var prefix = '/static/SyntaxHighlighter/js/shBrush';
     SyntaxHighlighter.autoloader.apply(null, path(
         'applescript                @AppleScript',
         'actionscript3 as3          @AS3',
@@ -49,7 +50,9 @@
         'vb vbnet                   @Vb',
         'xml xhtml xslt html        @Xml'
     ));
-
+    SyntaxHighlighter.config.strings.viewSource = '查看源代码';
+    SyntaxHighlighter.all();
+    
     $(function () {
         $('*[data-original]').lazyload();
 
@@ -89,7 +92,6 @@
         });
 
 
-        SyntaxHighlighter.all();
     });
 
 

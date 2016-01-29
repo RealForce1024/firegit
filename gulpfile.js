@@ -43,58 +43,19 @@ gulp.task('dist', function () {
 function distShl() {
     "use strict";
 
-    //TODO http://alexgorbatchev.com/SyntaxHighlighter/download/ 从改页面下载源代码
-
-    //if (!fs.existsSync('bower_components/SyntaxHighlighter/')) {
-    //    if (!fs.existsSync('bower_components/SyntaxHighlighter.zip')) {
-    //        console.log("开始下载SyntaxHighlighter...");
-    //        exec('wget http://alexgorbatchev.com/SyntaxHighlighter/download/download.php?sh_current -O bower_components/SyntaxHighlighter.zip');
-    //    }
-    //    console.log("开始解压...");
-    //    exec('unzip -o bower_components/SyntaxHighlighter.zip -d bower_components/');
-    //    exec('mv bower_components/syntaxhighlighter* bower_components/SyntaxHighlighter');
-    //}
-    //
-    gulp.src('bower_components/SyntaxHighlighter/scripts/*.js')
+    gulp.src([
+            'bower_components/SyntaxHighlighter/scripts/shCore.js',
+            'bower_components/SyntaxHighlighter/scripts/shLegacy.js',
+            'bower_components/SyntaxHighlighter/scripts/XRegExp.js',
+            'bower_components/SyntaxHighlighter/scripts/shBrush*.js',
+            'resource/patch/SyntaxHighlighter/shAutoloader.js'
+        ])
         .pipe(gulp.dest('public/static/SyntaxHighlighter/js/'));
+
 
     gulp.src('bower_components/SyntaxHighlighter/styles/*.css')
         .pipe(gulp.dest('public/static/SyntaxHighlighter/css/'));
 
-    /*
-    // gulp-sass安装总是有问题，直接使用sass来进行处理
-    var fs = require('fs'),
-        prefix = 'bower_components/SyntaxHighlighter/src/sass/',
-        dest = 'public/static/SyntaxHighlighter/css/',
-        files = fs.readdirSync('bower_components/SyntaxHighlighter/src/sass/'),
-        path = require('path');
-
-    if (!fs.existsSync(dest)) {
-        exec('mkdir -p ' + dest);
-    }
-
-
-
-    files.forEach(function (file) {
-        if (file == 'shCore.scss' || file.indexOf('shTheme') === 0) {
-            var basename = path.basename(file, '.scss');
-            exec('sass ' + prefix + file + ' ' + dest + basename + '.css', function (error, stdout, stderr) {
-                console.log('stdout: ' + stdout);
-                console.log('stderr: ' + stderr);
-                if (error !== null) {
-                    console.log('exec error: ' + error);
-                }
-            });
-        }
-    });
-
-    gulp.src('bower_components/xregexp/min/xregexp-all-min.js')
-        .pipe(gulp.dest('public/static/xregexp/'));
-
-    // SyntaxHighlighter
-    gulp.src('bower_components/SyntaxHighlighter/src/js/*.js')
-        .pipe(gulp.dest('public/static/SyntaxHighlighter/js/'));
-        */
 }
 
 /**
@@ -110,3 +71,8 @@ function distFiregit() {
         .pipe(less())
         .pipe(gulp.dest('public/static/firegit/css/'));
 }
+
+
+gulp.task('watch', function () {
+    gulp.watch('resource/**/*', ['dist']);
+});
