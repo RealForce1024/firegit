@@ -23,36 +23,7 @@
         return result;
     };
 
-    SyntaxHighlighter.autoloader.apply(null, path(
-        'applescript                @AppleScript',
-        'actionscript3 as3          @AS3',
-        'bash shell                 @Bash',
-        'coldfusion cf              @ColdFusion',
-        'cpp c                      @Cpp',
-        'c# c-sharp csharp          @CSharp',
-        'css                        @Css',
-        'delphi pascal              @Delphi',
-        'diff patch pas             @Diff',
-        'erl erlang                 @Erlang',
-        'groovy                     @Groovy',
-        'java                       @Java',
-        'jfx javafx                 @JavaFX',
-        'js json jscript javascript @JScript',
-        'perl pl                    @Perl',
-        'php phtml                  @Php',
-        'text plain                 @Plain',
-        'py python                  @Python',
-        'powershell ps posh         @PowerShell',
-        'ruby rails ror rb          @Ruby',
-        'sass scss                  @Sass',
-        'scala                      @Scala',
-        'sql                        @Sql',
-        'vb vbnet                   @Vb',
-        'xml xhtml xslt html        @Xml'
-    ));
-    SyntaxHighlighter.config.strings.viewSource = '查看源代码';
-    SyntaxHighlighter.all();
-    
+
     $(function () {
         $('*[data-original]').lazyload();
 
@@ -92,6 +63,35 @@
         });
 
 
+        SyntaxHighlighter.autoloader.apply(null, path(
+            'applescript                @AppleScript',
+            'actionscript3 as3          @AS3',
+            'bash shell                 @Bash',
+            'coldfusion cf              @ColdFusion',
+            'cpp c                      @Cpp',
+            'c# c-sharp csharp          @CSharp',
+            'css                        @Css',
+            'delphi pascal              @Delphi',
+            'diff patch pas             @Diff',
+            'erl erlang                 @Erlang',
+            'groovy                     @Groovy',
+            'java                       @Java',
+            'jfx javafx                 @JavaFX',
+            'js json jscript javascript @JScript',
+            'perl pl                    @Perl',
+            'php phtml                  @Php',
+            'text plain                 @Plain',
+            'py python                  @Python',
+            'powershell ps posh         @PowerShell',
+            'ruby rails ror rb          @Ruby',
+            'sass scss                  @Sass',
+            'scala                      @Scala',
+            'sql                        @Sql',
+            'vb vbnet                   @Vb',
+            'xml xhtml xslt html        @Xml'
+        ));
+        SyntaxHighlighter.config.strings.viewSource = '查看源代码';
+        SyntaxHighlighter.all();
     });
 
 

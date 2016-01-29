@@ -22,8 +22,8 @@
 <div id="dialog" style="display: none">
     <form data-hook="ajaxable" data-hook-option="{okText:'添加分支成功'}" class="form-horizontal" method="post" action="<?= $this->v['prefix'] ?>_new_branch">
         <div class="form-group">
-            <label for="iptFrom" class="col-sm-3 control-label">来源分支</label>
-            <div class="col-sm-9">
+            <label for="iptFrom" class="col-sm-4 control-label">来源分支</label>
+            <div class="col-sm-8">
                 <select class="form-control" name="orig" required>
                     <option value="">选择来源分支</option>
                     <?php foreach ($this->v['branches'] as $branch): ?>
@@ -33,8 +33,8 @@
             </div>
         </div>
         <div class="form-group">
-            <label for="iptFrom" class="col-sm-3 control-label">新分支</label>
-            <div class="col-sm-9">
+            <label for="iptFrom" class="col-sm-4 control-label">新分支</label>
+            <div class="col-sm-8">
                 <input type="text" required min="6" maxlength="30" class="form-control" id="iptFrom" placeholder="新分支"
                        name="dest"/>
             </div>
@@ -54,7 +54,7 @@
             window.currentDialog = dialog({
                 content: $('#dialog'),
                 title: '添加分支'
-            }).width(400).show();
+            }).show();
         });
         $.firegit.errMap['firegit.illegalBranch'] = '分支命名格式不对：<?=GIT_BRANCH_RULE?>';
     }(jQuery);
