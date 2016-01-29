@@ -26,6 +26,7 @@ class Controller extends \firegit\http\Controller
                 'branch' => $this->gitBranch,
                 'url' => 'http://' . $this->request->host . '/' . $this->gitGroup . '/' . $this->gitName . '.git',
             ),
+            'prefix' => '/'.$this->gitGroup.'/'.$this->gitName.'/',
         ));
 
         $this->response->set('isAjax', $this->request->isAjax);

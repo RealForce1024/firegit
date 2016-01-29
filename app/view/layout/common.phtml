@@ -15,10 +15,9 @@
 </head>
 <body>
 <?php
-$prefix = '/' . $this->v['git']['group'] . '/' . $this->v['git']['name'] . '/';
 $branch = $this->v['git']['branch'];
 $navType = isset($this->v['navType']) ? $this->v['navType'] : 'home';
-$this->set('prefix', $prefix);
+$prefix = $this->v['prefix'];
 ?>
 <div class="container">
     <h1>

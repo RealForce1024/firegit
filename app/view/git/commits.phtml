@@ -23,13 +23,13 @@
     <div class="text-center">
         <a id="nextCommitLink" data-hook="ajaxable" data-hook-option="{
             container: '#commitList>tbody'
-        }" href="/<?=$this->v['git']['group']?>/<?=$this->v['git']['name']?>/commits/<?= $this->v['nextHash'] ?>" class="btn btn-lg btn-primary">下一页..</a>
+        }" href="<?=$this->v['prefix']?>commits/<?= $this->v['nextHash'] ?>" class="btn btn-lg btn-primary">下一页..</a>
     </div>
 <?php endif ?>
 <?php else: ?>
     <script>
         <?php if($this->v['nextHash']):?>
-        $('#nextCommitLink').attr('href', '/<?=$this->v['git']['group']?>/<?=$this->v['git']['name']?>/commits/<?=$this->v['nextHash']?>');
+        $('#nextCommitLink').attr('href', '<?=$this->v['prefix']?>commits/<?=$this->v['nextHash']?>');
         <?php else:?>
         $('#nextCommitLink').hide();
         <?php endif?>
