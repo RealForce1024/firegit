@@ -1,0 +1,69 @@
+.diffs {
+  width: 100%;
+
+  td {
+    height: 20px;
+    line-height: 20px;
+  }
+
+  tr:hover td {
+    background: #d7e0e3;
+  }
+
+  // 去掉的行
+  .block-from  {
+    td {
+      background-color: #ffecec;
+
+      &.line-from, &.line-to {
+        background-color: #ffdddd;
+        border-color: #f1c0c0;
+      }
+    }
+  }
+
+  // 新加的行
+  .block-to {
+    td {
+      background-color: #eaffea;
+
+      &.line-from, &.line-to {
+        background-color: #dbffdb;
+        border-color: #c1e9c1;
+      }
+    }
+
+  }
+
+  // 比较不同的起始
+  .block-start,
+  // 文件结束
+  .block-end {
+    td {
+      color: #999;
+    }
+    &:hover td {
+      background: transparent;
+    }
+  }
+
+  // 老版本对应的行号
+  .line-from,
+  // 新版本对应的行号
+  .line-to {
+    width: 40px;
+    font-family: Consolas;
+    font-size: 10px;
+    text-align: right;
+    padding: 0 2px;
+    font-style: normal;
+    color: gray;
+    border-right: solid 1px #ccc;
+  }
+
+  .code {
+    padding-left: 5px;
+    font-family: Consolas;
+    font-size: 12px;
+  }
+}
