@@ -1,9 +1,37 @@
-<table class="table table-striped">
-    <?php foreach ($this->v['commits'] as $commit): ?>
+<?php if (!$this->v['isAjax']): ?>
+<table class="table table-striped" id="commitList">
+    <?php endif ?>
+
+    <?php foreach ($this->v['commits'] as $day => $_commits): ?>
         <tr>
-            <td><a href="<?= $this->v['prefix'] ?>commit/<?= $commit['hash'] ?>"><?= substr($commit['hash'], 0, 8) ?></a></td>
-            <td><?= $commit['msg'] ?></td>
-            <td><?= date('Y/m/d H:i', $commit['time']) ?></td>
+            <td colspan="4"><h5 class="text-danger"><b><?= $day ?></b></h5></td>
         </tr>
+        <?php foreach ($_commits as $commit): ?>
+            <tr>
+                <td><a href="<?= $this->v['prefix'] ?>commit/<?= $commit['hash'] ?>"><?= substr($commit['hash'], 0,
+                            8) ?></a></td>
+                <td><?= $commit['msg'] ?></td>
+                <td><?= date('Y/m/d H:i', $commit['time']) ?></td>
+                <td><?= $commit['author'] ?></td>
+            </tr>
+        <?php endforeach ?>
     <?php endforeach ?>
+
+    <?php if (!$this->v['isAjax']): ?>
 </table>
+<?php if ($this->v['nextHash']): ?>
+    <div class="text-center">
+        <a id="nextCommitLink" data-hook="ajaxable" data-hook-option="{
+            container: '#commitList>tbody'
+        }" href="<?= $this->v['prefix'] ?>commits/<?= $this->v['nextHash'] ?>" class="btn btn-lg btn-primary">下一页..</a>
+    </div>
+<?php endif ?>
+<?php else: ?>
+    <script>
+        <?php if($this->v['nextHash']):?>
+        $('#nextCommitLink').attr('href', '<?=$this->v['prefix']?>commits/<?=$this->v['nextHash']?>');
+        <?php else:?>
+        $('#nextCommitLink').parent().hide();
+        <?php endif?>
+    </script>
+<?php endif?>

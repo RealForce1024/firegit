@@ -77,9 +77,13 @@ class Reposite
     function listCommits($hash, $num = 40)
     {
         chdir($this->dir);
-        $cmd = sprintf('git log --oneline -%d %s --format="%s"', $num, $hash, '%H %ct %an %s');
+        $cmd = sprintf('git log --oneline -%d %s --format="%s"', $num + 1, $hash, '%H %ct %an %s');
         exec($cmd, $lines, $code);
         $commits = array();
+        $next = null;
+        if (count($lines) > $num) {
+            $next = explode(' ', array_pop($lines), 2);
+        }
         foreach ($lines as $line) {
             $arr = explode(' ', $line, 4);
             $commits[] = array(
@@ -89,7 +93,10 @@ class Reposite
                 'msg' => isset($arr[3]) ? $arr[3] : '',
             );
         }
-        return $commits;
+        return array(
+            'commits' => $commits,
+            'next' => $next ? $next[0] : 0
+        );
     }
 
     /**

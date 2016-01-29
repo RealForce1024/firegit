@@ -13,6 +13,7 @@ class Request
     var $contentType;
     var $options = array();
     var $rawUri;
+    var $isAjax = false;
 
     function __construct()
     {
@@ -28,6 +29,10 @@ class Request
         $this->uri = $uri;
         $this->method = $_SERVER['REQUEST_METHOD'];
         $this->host = $_SERVER['HTTP_HOST'];
+
+        if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest') {
+            $this->isAjax = true;
+        }
 
         $this->ext = $ext = strtolower(pathinfo($this->rawUri, PATHINFO_EXTENSION));
         if ($this->method == 'POST' && !$ext) {

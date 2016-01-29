@@ -28,7 +28,10 @@ class Controller extends \firegit\http\Controller
             ),
         ));
 
-        $this->response->setLayout('layout/common.phtml');
+        $this->response->set('isAjax', $this->request->isAjax);
+        if (!$this->request->isAjax) {
+            $this->response->setLayout('layout/common.phtml');
+        }
     }
 
     function index_action()
@@ -124,15 +127,22 @@ class Controller extends \firegit\http\Controller
     {
         $fromCommit = isset($_GET['from']) ? $_GET['from'] : $this->gitBranch;
         $reposite = new Reposite($this->gitGroup, $this->gitName);
-        $commits = $reposite->listCommits($fromCommit);
+        $commits = $reposite->listCommits($fromCommit, 20);
+
+        $nCommits = array();
+        foreach($commits['commits'] as $commit) {
+            $day = date('Y/m/d', $commit['time']);
+            $nCommits[$day][] = $commit;
+        }
 
         $branches = $reposite->listBranches();
 
         $this->response
             ->set(array(
                 'navType' => 'commit',
-                'commits' => $commits,
+                'commits' => $nCommits,
                 'branches' => $branches,
+                'nextHash' => $commits['next'],
                 'branchType' => 'commits',
             ))
             ->setView('git/commits.phtml');

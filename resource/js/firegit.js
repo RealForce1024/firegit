@@ -142,26 +142,38 @@
         var nodeName = node.nodeName;
         switch (nodeName) {
             case 'A':
-                $(node).on('click', function () {
-                    var confirm = this.getAttribute('data-confirm'), href = this.href;
-                    if (confirm) {
-                        dialog({
-                            content: confirm,
-                            title: '提示',
-                            okValue: '确认',
-                            ok: function () {
-                                doLinkPost(href, option);
-                            },
-                            cancelValue: '取消',
-                            cancel: function () {
-                            }
-                        }).width(300).show();
-                    } else {
-                        doLinkPost(this.href, option);
-                    }
+                if (option.container) {
+                    $(node).on('click', function() {
+                        var dlg = dialog({}).show();
+                        $.get(node.href, function(html) {
+                           $(option.container).append(html);
+                            dlg.close();
+                        });
+                        return false;
+                    });
+                } else {
+                    $(node).on('click', function () {
+                        var confirm = this.getAttribute('data-confirm'), href = this.href;
+                        if (confirm) {
+                            dialog({
+                                content: confirm,
+                                title: '提示',
+                                okValue: '确认',
+                                ok: function () {
+                                    doLinkPost(href, option);
+                                },
+                                cancelValue: '取消',
+                                cancel: function () {
+                                }
+                            }).width(300).show();
+                        } else {
+                            doLinkPost(this.href, option);
+                        }
 
-                    return false;
-                });
+                        return false;
+                    });
+                }
+
                 break;
             case 'FORM':
                 $(node).on('submit', function () {
