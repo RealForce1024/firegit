@@ -384,6 +384,11 @@ class Reposite
                                     'line' => $line,
                                 );
                                 break;
+                            case '\\':
+                                $blocks[] = array(
+                                    'line' => $line,
+                                );
+                                break;
                             default:
                                 $fromLine++;
                                 $toLine++;
