@@ -2,7 +2,6 @@ var gulp = require('gulp');
 var del = require('del');
 var exec = require('child_process').execSync;
 var less = require('gulp-less');
-var jade = require('gulp-phpjade');
 var fs = require('fs');
 
 gulp.task('dist', function () {
