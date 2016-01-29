@@ -88,7 +88,7 @@
             'scala                      @Scala',
             'sql                        @Sql',
             'vb vbnet                   @Vb',
-            'xml xhtml xslt html        @Xml'
+            'xml xhtml xslt html project buildpath buildpath     @Xml'
         ));
         SyntaxHighlighter.config.strings.viewSource = '查看源代码';
         SyntaxHighlighter.all();

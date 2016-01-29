@@ -10,8 +10,8 @@ class Bootstrap
 
         $uri = $_SERVER['REQUEST_URI'];
         $_SERVER['REQUEST_RAWURI'] = $uri;
-        if (preg_match('#^\/([a-zA-Z][a-zA-Z0-9\-\_]{5,20})\/([a-zA-Z][a-zA-Z0-9\-\_]+)(\.git)?(\/.*)?$#', $uri, $ms)) {
-            $dir = GIT_REPO . '/' . $ms[1] . '/' . $ms[2] . '.git';
+        if (preg_match('#^\/([a-zA-Z][a-zA-Z0-9\-\_]{2,19})\/([a-zA-Z][a-zA-Z0-9\-\_]+)(\.git)?(\/.*)?$#', $uri, $ms)) {
+            $dir = GIT_REPO . $ms[1] . '/' . $ms[2] . '.git';
 
             if (is_dir($dir)) {
                 $arr = explode('/', trim($uri, '/'));
