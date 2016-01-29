@@ -49,41 +49,6 @@
         'vb vbnet                   @Vb',
         'xml xhtml xslt html        @Xml'
     ));
-    //    'php phtml ' +  prefix + 'Php.js',
-    //    'applescript ' + prefix + 'AppleScript.js',
-    //    'actionscript3 as3 as ' + prefix + 'AS3.js',
-    //    'bash shell ' + prefix + 'Bash.js',
-    //    'coldfusion cf ' + prefix + 'ColdFusion.js',
-    //    'cpp c ' + prefix + 'Cpp.js'
-    //);
-
-    //SyntaxHighlighter.autoloader(path(
-    //    'applescript                @shBrushAppleScript.js',
-    //    'actionscript3 as3          @shBrushAS3.js',
-    //    'bash shell                 @shBrushBash.js',
-    //    'coldfusion cf              @shBrushColdFusion.js',
-    //    'cpp c                      @shBrushCpp.js',
-    //    'c# c-sharp csharp          @shBrushCSharp.js',
-    //    'css                        @shBrushCss.js',
-    //    'delphi pascal              @shBrushDelphi.js',
-    //    'diff patch pas             @shBrushDiff.js',
-    //    'erl erlang                 @shBrushErlang.js',
-    //    'groovy                     @shBrushGroovy.js',
-    //    'java                       @shBrushJava.js',
-    //    'jfx javafx                 @shBrushJavaFX.js',
-    //    'js json jscript javascript @shBrushJScript.js',
-    //    'perl pl                    @shBrushPerl.js',
-    //    'php                        @shBrushPhp.js',
-    //    'text plain                 @shBrushPlain.js',
-    //    'py python                  @shBrushPython.js',
-    //    'powershell ps posh         @shBrushPowerShell.js',
-    //    'ruby rails ror rb          @shBrushRuby.js',
-    //    'sass scss                  @shBrushSass.js',
-    //    'scala                      @shBrushScala.js',
-    //    'sql                        @shBrushSql.js',
-    //    'vb vbnet                   @shBrushVb.js',
-    //    'xml xhtml xslt html        @shBrushXml.js'
-    //));
 
     $(function () {
         $('*[data-original]').lazyload();

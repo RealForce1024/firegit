@@ -94,6 +94,9 @@ class Controller extends \firegit\http\Controller
             case 'py':
             case 'phtml':
             case 'c':
+            case 'less':
+            case 'sass':
+            case 'coffee':
                 $node['content'] = '<pre class="brush: php">' . htmlentities($node['content']) . '</pre>';
                 break;
             case 'ico':
