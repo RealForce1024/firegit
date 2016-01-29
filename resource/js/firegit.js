@@ -149,7 +149,7 @@
                         }
 
                         setTimeout(function() {
-                            dlg.show();
+                            dlg.close();
                         }, 500);
 
                         $.get(node.href, function (html) {
