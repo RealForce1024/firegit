@@ -147,7 +147,11 @@
                         if (!dlg) {
                             dlg = dialog().title('加载中...');
                         }
-                        dlg.show();
+
+                        setTimeout(function() {
+                            dlg.show();
+                        }, 500);
+
                         $.get(node.href, function (html) {
                             dlg.close();
                             $(option.container).append(html);
