@@ -1,12 +1,12 @@
 <?php
-$_root = dirname(__DIR__);
-define('APP_ROOT', $_root.'/app/');
-define('CTL_ROOT', $_root . '/app/ctl/');
-define('VIEW_ROOT', $_root . '/app/view/');
-define('FR_ROOT', $_root . '/vendor/firegit/');
-define('LOG_ROOT', $_root.'/log/');
-define('BIN_ROOT', $_root.'/bin/');
-define('VENDOR_ROOT', $_root.'/vendor/');
+define('SITE_ROOT', dirname(__DIR__));
+define('APP_ROOT', SITE_ROOT.'/app/');
+define('CTL_ROOT', SITE_ROOT . '/app/ctl/');
+define('VIEW_ROOT', SITE_ROOT . '/app/view/');
+define('FR_ROOT', SITE_ROOT . '/vendor/firegit/');
+define('LOG_ROOT', SITE_ROOT.'/log/');
+define('BIN_ROOT', SITE_ROOT.'/bin/');
+define('VENDOR_ROOT', SITE_ROOT.'/vendor/');
 
 
 define('GIT_REPO', '/home/git/repos/');

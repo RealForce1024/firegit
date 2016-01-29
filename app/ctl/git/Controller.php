@@ -61,7 +61,7 @@ class Controller extends \firegit\http\Controller
             'nodes' => $nodes,
             'branches' => $branches,
             'branchType' => 'tree',
-        ))->setView('git/index.phtml');
+        ))->setView('git/tree.phtml');
     }
 
     function blob_action()

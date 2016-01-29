@@ -44,12 +44,23 @@ class Reposite
             'dirs' => array(),
             'files' => array(),
         );
+        $modules = null;
         foreach ($lines as $key => $line) {
-            $node = self::parseByLine($line);
-            if ($node['dir']) {
-                $ret['dirs'][strtolower($node['name'])] = $node;
-            } else {
-                $ret['files'][strtolower($node['name'])] = $node;
+            $node = $this->parseLsLine($line);
+            switch($node['type']) {
+                case 'commit':
+                    if ($modules === null) {
+                        $modules = $this->listModules($branch);
+                    }
+                    if (isset($modules[$node['path']])) {
+                        $node['url'] = $modules[$node['path']]['url'];
+                    }
+                case 'tree':
+                    $ret['dirs'][strtolower($node['name'])] = $node;
+                    break;
+                case 'blob':
+                    $ret['files'][strtolower($node['name'])] = $node;
+                    break;
             }
         }
         ksort($ret['dirs'], SORT_STRING);
@@ -123,7 +134,7 @@ class Reposite
         if (!$lines) {
             return false;
         }
-        $node = self::parseByLine($lines[0]);
+        $node = $this->parseLsLine($lines[0]);
 
         $cmd = 'git show ' . $node['hash'];
         ob_start();
@@ -132,7 +143,58 @@ class Reposite
         return $node;
     }
 
-    static function parseByLine($line)
+    private $modules;
+
+    /**
+     * 获取所有子模块
+     * @param string $branch
+     * @return array
+     */
+    function listModules($branch)
+    {
+        if ($this->modules) {
+            return $this->modules;
+        }
+        $node = $this->getBlob($branch, '.gitmodules');
+        if (!$node) {
+            return array();
+        }
+        $lines = explode("\n", $node['content']);
+        $modules = array();
+        $module = array();
+        foreach($lines as $line) {
+            if (strncmp($line, '[submodule ', 11) === 0) {
+                if (!empty($module)) {
+                    $modules[$module['name']] = $module;
+                    $module = array();
+                }
+                $module['name'] = trim(substr($line, 11, -1), '"\'');
+            } else {
+                $line = trim($line);
+                $arr = array_map('trim', explode('=', $line, 2));
+                if (count($arr) == 2) {
+                    if ($arr[0] == 'path') {
+                        $module['path'] = $arr[1];
+                    } else {
+                        if ($arr[0] == 'url') {
+                            $module['url'] = $arr[1];
+                        }
+                    }
+                }
+            }
+        }
+        if (!empty($module)) {
+            $modules[$module['name']] = $module;
+        }
+        return $this->modules = $modules;
+    }
+
+    /**
+     * 解析ls-tree产生的一行
+     * @param $line
+     * @return array
+     */
+    function parseLsLine($line)
     {
         list($mode, $type, $hash, $size, $path) = preg_split('#[\s\t]+#', $line);
         $path = Util::normalPath($path);
@@ -146,9 +208,7 @@ class Reposite
         );
 
 
-        if ($type == 'tree') {
-            $node['dir'] = true;
-        } else {
+        if ($type == 'blob') {
             $pos = strrpos($path, '.');
             if ($pos !== false) {
                 $node['ext'] = substr($path, $pos + 1);
@@ -171,6 +231,7 @@ class Reposite
     /**
      * 获取一个提交的统计信息
      * @param $hash
+     * @return array
      */
     function statCommit($hash)
     {

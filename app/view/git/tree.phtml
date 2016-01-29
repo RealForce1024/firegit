@@ -19,8 +19,14 @@
     <?php foreach ($this->v['nodes']['dirs'] as $node): ?>
         <tr>
             <td>
-                <em class="glyphicon glyphicon-folder-close text-primary"></em>
-                <a href="<?= $this->v['prefix'] ?>tree/<?= $this->v['git']['branch'] ?>/<?= $node['path'] ?>"><?= $node['name'] ?></a>
+                <?php if ($node['type'] == 'commit' && isset($node['url'])): ?>
+                    <em class="glyphicon glyphicon-folder-close text-danger"></em>
+                    <a href="<?= $node['url'] ?>" target="_blank"><?= $node['name'] ?></a> @ <a
+                        href="<?= substr($node['url'], 0, -4) ?>/tree/<?=$node['hash']?>" target="_blank"><?= substr($node['hash'], 0, 8) ?></a>
+                <?php else: ?>
+                    <em class="glyphicon glyphicon-folder-close text-primary"></em>
+                    <a href="<?= $this->v['prefix'] ?>tree/<?= $this->v['git']['branch'] ?>/<?= $node['path'] ?>"><?= $node['name'] ?></a>
+                <?php endif ?>
             </td>
             <td></td>
             <td></td>
@@ -39,13 +45,13 @@
     </tbody>
 </table>
 
-<?php if(!empty($this->v['readme'])):?>
+<?php if (!empty($this->v['readme'])): ?>
     <div class="panel panel-default">
         <div class="panel-heading">
-            <h5><?=$this->v['readme']['name']?></h5>
+            <h5><?= $this->v['readme']['name'] ?></h5>
         </div>
         <div class="panel-body">
-            <?=$this->v['readme']['content']?>
+            <?= $this->v['readme']['content'] ?>
         </div>
     </div>
-<?php endif?>
+<?php endif ?>
