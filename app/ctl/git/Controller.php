@@ -102,6 +102,15 @@ class Controller extends \firegit\http\Controller
             case 'sass':
             case 'coffee':
             case 'prefs':
+            case 'h':
+            case 'm':
+            case 'c':
+            case 'mm':
+            case 'xib':
+            case 'gradle':
+            case 'pro':
+            case 'plist':
+            case 'properties':
                 $node['content'] = '<pre class="brush: '.$this->request->ext.'">' . htmlentities($node['content']) . '</pre>';
                 break;
             case 'ico':

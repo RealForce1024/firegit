@@ -64,23 +64,23 @@
 
 
         SyntaxHighlighter.autoloader.apply(null, path(
-            'applescript                @AppleScript',
+            'applescript mm m               @AppleScript',
             'actionscript3 as3          @AS3',
             'bash shell                 @Bash',
             'coldfusion cf              @ColdFusion',
-            'cpp c                      @Cpp',
+            'h cpp c                    @Cpp',
             'c# c-sharp csharp          @CSharp',
             'css                        @Css',
             'delphi pascal              @Delphi',
             'diff patch pas             @Diff',
             'erl erlang                 @Erlang',
             'groovy                     @Groovy',
-            'java                       @Java',
+            'java gradle                       @Java',
             'jfx javafx                 @JavaFX',
             'js json jscript javascript @JScript',
             'perl pl                    @Perl',
             'php phtml                  @Php',
-            'text plain                 @Plain',
+            'text plain pro properties gitignore                @Plain',
             'py python                  @Python',
             'powershell ps posh         @PowerShell',
             'ruby rails ror rb          @Ruby',
@@ -88,7 +88,7 @@
             'scala                      @Scala',
             'sql                        @Sql',
             'vb vbnet                   @Vb',
-            'xml xhtml xslt html project buildpath buildpath     @Xml'
+            'xml xib xhtml plist xslt html project buildpath buildpath     @Xml'
         ));
         SyntaxHighlighter.config.strings.viewSource = '查看源代码';
         SyntaxHighlighter.all();
