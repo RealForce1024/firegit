@@ -139,15 +139,18 @@
     }
 
     function doAjaxableHook(node, option) {
-        var nodeName = node.nodeName;
+        var nodeName = node.nodeName, dlg;
         switch (nodeName) {
             case 'A':
                 if (option.container) {
-                    $(node).on('click', function() {
-                        var dlg = dialog({}).show();
-                        $.get(node.href, function(html) {
-                           $(option.container).append(html);
+                    $(node).on('click', function () {
+                        if (!dlg) {
+                            dlg = dialog().title('加载中...');
+                        }
+                        dlg.show();
+                        $.get(node.href, function (html) {
                             dlg.close();
+                            $(option.container).append(html);
                         });
                         return false;
                     });
