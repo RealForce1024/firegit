@@ -145,15 +145,18 @@
                 if (option.container) {
                     $(node).on('click', function () {
                         if (!dlg) {
-                            dlg = dialog().title('加载中...');
+                            dlg = dialog({
+                                title: '加载中...',
+                                cancel: false,
+                                width: 200
+                            });
                         }
-
-                        setTimeout(function() {
-                            dlg.close();
-                        }, 500);
+                        dlg.show();
 
                         $.get(node.href, function (html) {
-                            dlg.close();
+                            setTimeout(function() {
+                                dlg.close();
+                            }, 500);
                             $(option.container).append(html);
                         });
                         return false;
