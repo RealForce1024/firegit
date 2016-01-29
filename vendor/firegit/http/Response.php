@@ -93,7 +93,8 @@ class Response
             $this->outputs = array(
                 'status' => $this->status,
                 'msg' => $this->ex->getMessage(),
-                'trace' => $this->ex->getTraceAsString()
+                'file' => str_replace(SITE_ROOT, '', $this->ex->getFile()),
+                'trace' => $this->ex->getLine(),
             );
         }
         $output = array(
