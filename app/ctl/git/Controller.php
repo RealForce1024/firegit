@@ -93,8 +93,8 @@ class Controller extends \firegit\http\Controller
             case 'sh':
             case 'py':
             case 'phtml':
-                $node['content'] = '<pre><code class="' . $this->request->ext
-                    . '">' . htmlspecialchars($node['content']) . '</code></pre>';
+            case 'c':
+                $node['content'] = '<pre class="brush: php">' . htmlentities($node['content']) . '</pre>';
                 break;
             case 'ico':
             case 'gif':

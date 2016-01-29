@@ -49,12 +49,13 @@
 </div>
 
 <script>
-    $('#addNewBranch').on('click', function () {
-        window.currentDialog = dialog({
-            content: $('#dialog'),
-            title: '添加分支'
-        }).width(400).show();
-    });
-    window.errMap = window.errMap || {};
-    errMap['firegit.illegalBranch'] = '分支命名格式不对：<?=GIT_BRANCH_RULE?>'
+    !function($) {
+        $('#addNewBranch').on('click', function () {
+            window.currentDialog = dialog({
+                content: $('#dialog'),
+                title: '添加分支'
+            }).width(400).show();
+        });
+        $.firegit.errMap['firegit.illegalBranch'] = '分支命名格式不对：<?=GIT_BRANCH_RULE?>';
+    }(jQuery);
 </script>
