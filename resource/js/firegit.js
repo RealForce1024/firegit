@@ -66,11 +66,11 @@
         SyntaxHighlighter.autoloader.apply(null, path(
             'applescript mm m               @AppleScript',
             'actionscript3 as3          @AS3',
-            'bash shell                 @Bash',
+            'sh bash shell                 @Bash',
             'coldfusion cf              @ColdFusion',
             'h cpp c                    @Cpp',
             'c# c-sharp csharp          @CSharp',
-            'css                        @Css',
+            'css less                       @Css',
             'delphi pascal              @Delphi',
             'diff patch pas             @Diff',
             'erl erlang                 @Erlang',

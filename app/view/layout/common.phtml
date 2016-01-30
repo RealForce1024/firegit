@@ -9,6 +9,7 @@
     <link href="/static/artDialog/css/ui-dialog.css" rel="stylesheet"/>
     <link href="/static/SyntaxHighlighter/css/shCore.css" rel="stylesheet"/>
     <link href="/static/SyntaxHighlighter/css/shThemeDefault.css" rel="stylesheet"/>
+    <link href="/static/firegit/css/common.css" rel="stylesheet"/>
 
     <script src="/static/jquery/jquery.min.js"></script>
     <script src="/static/firegit/js/firegit.js"></script>
@@ -19,7 +20,7 @@ $branch = $this->v['git']['branch'];
 $navType = isset($this->v['navType']) ? $this->v['navType'] : 'home';
 $prefix = $this->v['prefix'];
 ?>
-<div class="container">
+<div class="fluid-container">
     <h1>
         <?= $this->v['git']['group'] ?>/<?= $this->v['git']['name'] ?>
         <small><?= $this->v['git']['url'] ?></small>
