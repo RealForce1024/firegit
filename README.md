@@ -37,15 +37,11 @@ server {
     }
 
     location ~ /info/refs$ {
-        include /home/dengxiaolong/nginx/git.conf;
+        include git.conf;
     }
 
-    location ~ /git-receive-pack$ {
-        include /home/dengxiaolong/nginx/git.conf;
-    }
-
-    location ~ /git-upload-pack$  {
-        include /home/dengxiaolong/nginx/git.conf;
+    location ~ /git-(receive|upload)-pack$ {
+        include git.conf;
     }
 
     location /index.php {
