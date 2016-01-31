@@ -11,6 +11,15 @@ class Controller extends \firegit\http\Controller
     private $gitPath;
     private $gitBranch;
 
+    /**
+     * @var int 每页的大小
+     */
+    private $_sz;
+    /**
+     * @var int 第几页，从0开始
+     */
+    private $_pn;
+
     function _before()
     {
         $this->gitGroup = $_SERVER['GIT_GROUP'];

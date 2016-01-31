@@ -10,6 +10,8 @@ class Bootstrap
 
         self::initUrl();
 
+        self::initDb();
+
         \firegit\http\Dispatcher::dispatch();
     }
 
@@ -74,5 +76,14 @@ class Bootstrap
                 }
             }
         }
+    }
+
+    /**
+     * 初始化数据库
+     */
+    public static function initDb()
+    {
+        $conf = include CONF_ROOT.'/db.php';
+        \firegit\db\Db::init($conf);
     }
 }
