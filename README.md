@@ -37,14 +37,15 @@ server {
     }
 
     location ~ /info/refs$ {
-        include git.conf;
+        include /home/dengxiaolong/nginx/git.conf;
     }
 
     location ~ /git-receive-pack$ {
-        if ( $request_method != "POST") {
-            return 403;
-        }
-        include git.conf;
+        include /home/dengxiaolong/nginx/git.conf;
+    }
+
+    location ~ /git-upload-pack$  {
+        include /home/dengxiaolong/nginx/git.conf;
     }
 
     location /index.php {
