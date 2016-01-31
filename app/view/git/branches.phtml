@@ -1,7 +1,11 @@
 <div class="pull-right" style="padding: 6px;">
-    <a id="addNewBranch" class="btn btn-primary"><em class="glyphicon glyphicon-plus"></em>添加分支</a>
+    <a id="addNewBranch" class="btn btn-primary" data-hook="dialog" data-hook-option="{
+        content:$('#dialog'),
+        title:'添加分支',
+        width: 400
+    }"><em class="glyphicon glyphicon-plus"></em>添加分支</a>
 </div>
-<table class="table table-striped table-hover table-responsive">
+<table class="clearfix table table-striped table-hover table-responsive">
     <?php foreach ($this->v['branches'] as $branch): ?>
         <tr>
             <td><em class="glyphicon glyphicon-random text-primary"></em> <a
@@ -49,13 +53,5 @@
 </div>
 
 <script>
-    !function($) {
-        $('#addNewBranch').on('click', function () {
-            window.currentDialog = dialog({
-                content: $('#dialog'),
-                title: '添加分支'
-            }).show();
-        });
-        $.firegit.errMap['firegit.illegalBranch'] = '分支命名格式不对：<?=GIT_BRANCH_RULE?>';
-    }(jQuery);
+    jQuery.firegit.errMap['firegit.illegalBranch'] = '分支命名格式不对：<?=GIT_BRANCH_RULE?>';
 </script>

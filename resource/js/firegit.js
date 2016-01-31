@@ -14,9 +14,6 @@
             ;
 
         for (var i = 0; i < args.length; i++) {
-            //var arr = args[i].split(/\s+/), l = arr.length;
-            //arr[l - 1] = arr[l - 1].replace('@', '/static/SyntaxHighlighter/js/shBrush') + '.js';
-            //result.push(arr);
             args[i] = args[i].replace('@', '/static/SyntaxHighlighter/js/shBrush') + '.js';
             result.push(args[i]);
         }
@@ -26,26 +23,6 @@
 
     $(function () {
         $('*[data-original]').lazyload();
-
-        $('pre.highlight>code').each(function (i, block) {
-            hljs.highlightBlock(block);
-            var elem = $(block),
-                pos = elem.position(),
-                height = elem.height(),
-                line = height / 18,
-                ol = $('<ol class="linenumber"></ol>'),
-                html = [];
-            for (var i = 1; i <= line; i++) {
-                html.push('<li>' + i + '</li>');
-            }
-            ol.html(html.join('')).css({
-                position: 'absolute',
-                left: pos.left,
-                top: pos.top,
-                width: 40,
-                height: elem.height()
-            }).insertBefore(block.parentNode);
-        });
 
         $('*[data-hook]').each(function () {
             var hook = this.getAttribute('data-hook');
@@ -58,6 +35,9 @@
             switch (hook) {
                 case 'ajaxable':
                     doAjaxableHook(this, option);
+                    break;
+                case 'dialog':
+                    doDialogHook(this, option);
                     break;
             }
         });
@@ -154,7 +134,7 @@
                         dlg.show();
 
                         $.get(node.href, function (html) {
-                            setTimeout(function() {
+                            setTimeout(function () {
                                 dlg.close();
                             }, 500);
                             $(option.container).append(html);
@@ -191,5 +171,16 @@
                     return false;
                 });
         }
+    }
+
+    /**
+     * 显示对话框
+     * @param node
+     * @param option
+     */
+    function doDialogHook(node, option) {
+        $(node).on('click', function () {
+            window.currentDialog = dialog(option).show();
+        })
     }
 }(jQuery);

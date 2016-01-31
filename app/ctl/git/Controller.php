@@ -26,13 +26,16 @@ class Controller extends \firegit\http\Controller
                 'branch' => $this->gitBranch,
                 'url' => 'http://' . $this->request->host . '/' . $this->gitGroup . '/' . $this->gitName . '.git',
             ),
-            'prefix' => '/'.$this->gitGroup.'/'.$this->gitName.'/',
+            'prefix' => '/' . $this->gitGroup . '/' . $this->gitName . '/',
         ));
 
         $this->response->set('isAjax', $this->request->isAjax);
         if (!$this->request->isAjax) {
             $this->response->setLayout('layout/common.phtml');
         }
+
+        $this->_sz = min(isset($_GET['_sz']) ? intval($_GET['_sz']) : 0, 100);
+        $this->_pn = min(isset($_GET['_pn']) ? intval($_GET['_pn']) : 20, 50);
     }
 
     function index_action()

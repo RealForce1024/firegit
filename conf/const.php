@@ -7,6 +7,7 @@ define('FR_ROOT', SITE_ROOT . '/vendor/firegit/');
 define('LOG_ROOT', SITE_ROOT.'/log/');
 define('BIN_ROOT', SITE_ROOT.'/bin/');
 define('VENDOR_ROOT', SITE_ROOT.'/vendor/');
+define('CONF_ROOT', SITE_ROOT.'/conf/');
 
 
 define('GIT_REPO', '/home/git/repos/');

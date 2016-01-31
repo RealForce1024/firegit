@@ -122,9 +122,8 @@ class Reposite
             } else {
                 $branches[] = $branch;
             }
-
         }
-        return $branches;
+        return array_column($branches, null, 'name');
     }
 
     /**

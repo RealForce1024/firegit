@@ -28,9 +28,9 @@ $prefix = $this->v['prefix'];
 
     <ul class="nav nav-tabs">
         <li role="presentation"<?= ($navType == 'home' ? ' class="active"' : '') ?>><a href="<?= $prefix ?>">首页</a></li>
-        <li role="presentation"<?= ($navType == 'commit' ? ' class="active"' : '') ?>><a
-                href="<?= $prefix ?>commits/<?= $branch ?>">提交</a></li>
+        <li role="presentation"<?= ($navType == 'commit' ? ' class="active"' : '') ?>><a href="<?= $prefix ?>commits/<?= $branch ?>">提交</a></li>
         <li role="presentation"<?= ($navType == 'branch' ? ' class="active"' : '') ?>><a href="<?= $prefix ?>branches">分支</a>
+        <li role="presentation"<?= ($navType == 'merge' ? ' class="active"' : '') ?>><a href="<?= $prefix ?>merges">合并</a>
         </li>
     </ul>
     <?php if (empty($this->v['notShowNav']) && isset($this->v['branches']) && count($this->v['branches']) > 1): ?>

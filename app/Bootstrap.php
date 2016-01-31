@@ -8,6 +8,16 @@ class Bootstrap
         error_reporting(E_ALL);
         ini_set('display_errors', false);
 
+        self::initUrl();
+
+        \firegit\http\Dispatcher::dispatch();
+    }
+
+    /**
+     * 初始化网址
+     */
+    public static function initUrl()
+    {
         $uri = $_SERVER['REQUEST_URI'];
         $_SERVER['REQUEST_RAWURI'] = $uri;
         if (preg_match('#^\/([a-zA-Z][a-zA-Z0-9\-\_]{2,19})\/([a-zA-Z][a-zA-Z0-9\-\_]+)(\.git)?(\/.*)?$#', $uri, $ms)) {
@@ -29,7 +39,7 @@ class Bootstrap
                     $_SERVER['GIT_PATH'] = '';
                     $_SERVER['GIT_BRANCH'] = 'master';
                 } else {
-                    if (($len == 3 && ($arr[2] == 'branches' || $arr[2][0] == '_' )) || $len > 3) {
+                    if (($len == 3 && (in_array($arr[2], array('branches', 'merges')) || $arr[2][0] == '_' )) || $len > 3) {
                         if (in_array($arr[2], array(
                             'tree',
                             'blob',
@@ -40,6 +50,8 @@ class Bootstrap
                             'commit',
                             'branches',
                             'branch',
+                            'merges',
+                            'merge',
                             'contributors',
                             '_new_branch',
                             '_del_branch',
@@ -62,6 +74,5 @@ class Bootstrap
                 }
             }
         }
-        \firegit\http\Dispatcher::dispatch();
     }
 }
