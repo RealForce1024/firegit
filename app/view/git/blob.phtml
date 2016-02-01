@@ -15,8 +15,8 @@
                     <div class="btn-group" role="group" aria-label="First group" style="font-size:12px;">
                         <a class="btn btn-default" href="<?=$this->v['prefix']?>edit/<?=$this->v['node']['path']?>"><em class="glyphicon glyphicon-edit"></em>编辑</a>
                         <a class="btn btn-default" href="<?=$this->v['prefix']?>raw/<?=$this->v['git']['branch']?>/<?=$this->v['node']['path']?>" target="_blank">原始</a>
-                        <a class="btn btn-default" href="<?=$this->v['prefix']?>blame/<?=$this->v['git']['branch']?>">追责</a>
-                        <a class="btn btn-default" href="<?=$this->v['prefix']?>history/<?=$this->v['git']['branch']?>"><em class="glyphicon glyphicon-time"></em> 历史</a>
+                        <a class="btn btn-default" href="<?=$this->v['prefix']?>blame/<?=$this->v['git']['branch']?>/<?=$this->v['node']['path']?>" target="_blank">追责</a>
+                        <a href="<?=$this->v['prefix']?>history/<?=$this->v['git']['branch']?>/<?=$this->v['node']['path']?>" target="_blank" class="btn btn-default"><em class="glyphicon glyphicon-time"></em> 历史</a>
                     </div>
                 </div>
             </div>

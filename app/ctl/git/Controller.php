@@ -8,7 +8,6 @@ class Controller extends \firegit\http\Controller
 {
     private $gitGroup;
     private $gitName;
-
     /**
      * @var int 每页的大小
      */
@@ -36,7 +35,7 @@ class Controller extends \firegit\http\Controller
                 'name' => $this->gitName,
                 'url' => 'http://' . $this->request->host . '/' . $this->gitGroup . '/' . $this->gitName . '.git',
             ),
-            'prefix' => '/' . $this->gitGroup . '/' . $this->gitName . '/',
+            'prefix' => '/'.$this->gitGroup.'/'.$this->gitName.'/',
         ));
 
         $this->response->set('isAjax', $this->request->isAjax);
@@ -129,7 +128,6 @@ class Controller extends \firegit\http\Controller
             case 'classpath':
             case 'buildpath':
             case 'sh':
-            case 'py':
             case 'phtml':
             case 'c':
             case 'less':
@@ -138,7 +136,6 @@ class Controller extends \firegit\http\Controller
             case 'prefs':
             case 'h':
             case 'm':
-            case 'c':
             case 'mm':
             case 'xib':
             case 'gradle':
@@ -338,4 +335,37 @@ class Controller extends \firegit\http\Controller
     {
         var_dump($mergeId);
     }
+    /**
+     * 文件追责
+     */
+    function blame_action()
+    {
+        list($branch, $path) = $this->handleBranchAndPath(func_get_args());
+        $blame = $this->repo->getBlame($this->gitPath);
+        $this->response
+            ->set(array(
+                'blame' => $blame,
+                'path' => $path,
+            ))
+            ->setView('git/blame.phtml');
+    }
+
+
+    /**
+     * 代码历史
+     */
+    function history_action()
+    {
+
+        $reposite = new Reposite($this->gitGroup, $this->gitName);
+        $history = $reposite->getHistory($this->gitPath);
+        $this->response
+            ->set(array(
+                'history' => $history,
+                'path' => $this->gitPath,
+            ))
+            ->setView('git/history.phtml');
+
+    }
+
 }
