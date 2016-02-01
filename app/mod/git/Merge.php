@@ -98,4 +98,14 @@ class Merge
             'list' => $rows,
         );
     }
+
+    function getMerge($mergeId)
+    {
+        return Db::get('firegit')
+            ->table('fg_merge')
+            ->where(array(
+                'merge_id' => intval($mergeId),
+            ))
+            ->getOne();
+    }
 }

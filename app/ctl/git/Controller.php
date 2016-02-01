@@ -174,18 +174,12 @@ class Controller extends \firegit\http\Controller
 
         $commits = $this->repo->pagedGetCommits($branch, 20);
 
-        $nCommits = array();
-        foreach ($commits['commits'] as $commit) {
-            $day = date('Y/m/d', $commit['time']);
-            $nCommits[$day][] = $commit;
-        }
-
         $branches = $this->repo->listBranches();
 
         $this->response
             ->set(array(
                 'navType' => 'commit',
-                'commits' => $nCommits,
+                'commits' => $this->packCommits($commits),
                 'branches' => $branches,
                 'nextHash' => $commits['next'],
                 'branchType' => 'commits',
@@ -325,17 +319,55 @@ class Controller extends \firegit\http\Controller
 
     function diff_action()
     {
-        $orig = $_GET['orig'];
-        $dest = $_GET['dest'];
-        $this->repo = new Reposite($this->gitGroup, $this->gitName);
+        $orig = $this->get('orig');
+        $dest = $this->get('dest');
         $diffs = $this->repo->listDiffs($orig, $dest);
         $this->response->set(array(
             'diffs' => $diffs,
         ))->setView('git/components/diffs.phtml');
     }
 
+    function dcommit_action()
+    {
+        $orig = $this->get('orig');
+        $dest = $this->get('dest');
+        $commits = $this->repo->listCommits($orig, $dest);
+        $this->response->set(array(
+            'commits' => $this->packCommits($commits),
+        ))->setView('git/components/commits.phtml');
+    }
+
     function merge_action($mergeId)
     {
-        var_dump($mergeId);
+        $this->setBranch();
+
+        $api = new \firegit\app\mod\git\Merge();
+        $merge = $api->getMerge($mergeId);
+
+        if (!$merge) {
+            throw new \Exception('firegit.u_notfound');
+        }
+        $orig = $merge['orig_branch'];
+        $dest = $merge['dest_branch'];
+
+        $commits = $this->repo->listCommits($orig, $dest);
+
+        $this->response->set(array(
+            'merge' => $merge,
+            'commits' => $this->packCommits($commits),
+            'navType' => 'merge',
+            'orig' => $orig,
+            'dest' => $dest,
+        ))->setView('git/merge.phtml');
+    }
+
+    private function packCommits($commits)
+    {
+        $nCommits = array();
+        foreach ($commits as $commit) {
+            $day = date('Y/m/d', $commit['time']);
+            $nCommits[$day][] = $commit;
+        }
+        return $nCommits;
     }
 }
