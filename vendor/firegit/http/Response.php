@@ -3,7 +3,7 @@ namespace firegit\http;
 
 class Response
 {
-    private $outputs = array();
+    public $outputs = array();
     private $status = 'firegit.ok';
     private $tpl;
     protected $layout;
@@ -94,7 +94,7 @@ class Response
                 'status' => $this->status,
                 'msg' => $this->ex->getMessage(),
                 'file' => str_replace(SITE_ROOT, '', $this->ex->getFile()),
-                'trace' => $this->ex->getLine(),
+                'line' => $this->ex->getLine(),
             );
         }
         $output = array(

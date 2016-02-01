@@ -8,8 +8,6 @@ class Controller extends \firegit\http\Controller
 {
     private $gitGroup;
     private $gitName;
-    private $gitPath;
-    private $gitBranch;
 
     /**
      * @var int 每页的大小
@@ -20,19 +18,22 @@ class Controller extends \firegit\http\Controller
      */
     private $_pn;
 
+    /**
+     * @var \firegit\git\Reposite
+     */
+    private $repo;
+
     function _before()
     {
         $this->gitGroup = $_SERVER['GIT_GROUP'];
         $this->gitName = $_SERVER['GIT_NAME'];
-        $this->gitPath = $_SERVER['GIT_PATH'];
-        $this->gitBranch = $_SERVER['GIT_BRANCH'];
+
+        $this->repo = new Reposite($this->gitGroup, $this->gitName);
 
         $this->response->set(array(
             'git' => array(
                 'group' => $this->gitGroup,
                 'name' => $this->gitName,
-                'path' => $this->gitPath,
-                'branch' => $this->gitBranch,
                 'url' => 'http://' . $this->request->host . '/' . $this->gitGroup . '/' . $this->gitName . '.git',
             ),
             'prefix' => '/' . $this->gitGroup . '/' . $this->gitName . '/',
@@ -43,35 +44,54 @@ class Controller extends \firegit\http\Controller
             $this->response->setLayout('layout/common.phtml');
         }
 
-        $this->_sz = min(isset($_GET['_sz']) ? intval($_GET['_sz']) : 0, 100);
-        $this->_pn = min(isset($_GET['_pn']) ? intval($_GET['_pn']) : 20, 50);
+        $this->_sz = isset($_GET['_sz']) ? intval($_GET['_sz']) : 20;
+        if ($this->_sz > 100) {
+            $this->_sz = 100;
+        }
+        $this->_pn = isset($_GET['_pn']) ? intval($_GET['_pn']) : 0;
+        if ($this->_pn < 0 || $this->_pn > 100) {
+            $this->_pn = 0;
+        }
     }
 
     function index_action()
     {
-        $this->tree_action();
+        $this->tree_action('master', '');
+    }
+
+    private function handleBranchAndPath($args)
+    {
+        $branch = array_shift($args);
+        $path = implode('/', $args);
+
+        $this->setBranch($branch);
+        $this->response->outputs['git']['path'] = $path;
+
+        return array($branch, $path);
+    }
+
+    private function setBranch($branch = 'master')
+    {
+        $this->response->outputs['git']['branch'] = $branch;
     }
 
     function tree_action()
     {
-        $reposite = new Reposite($this->gitGroup, $this->gitName);
-        if (!$this->gitPath) {
-            $dir = './';
-        } else {
-            $dir = './' . $this->gitPath . '/';
-        }
-        $nodes = $reposite->listFiles($this->gitBranch, $dir);
+        list($branch, $path) = $this->handleBranchAndPath(func_get_args());
 
-        $branches = $reposite->listBranches();
+        $nodes = $this->repo->listFiles($branch, './'.$path.'/');
+
+        $branches = $this->repo->listBranches();
 
         if (!empty($nodes['files']['readme.md'])) {
             $node = $nodes['files']['readme.md'];
-            $node = $reposite->getBlob($this->gitBranch, $node['path']);
+            $node = $this->repo->getBlob($branch, $node['path']);
             require_once VENDOR_ROOT . '/parsedown/Parsedown.php';
             $parsedown = new \Parsedown();
             $node['content'] = $parsedown->text($node['content']);
             $this->response->set('readme', $node);
         }
+
         // 获取
         $this->response->set(array(
             'nodes' => $nodes,
@@ -82,9 +102,11 @@ class Controller extends \firegit\http\Controller
 
     function blob_action()
     {
-        $reposite = new Reposite($this->gitGroup, $this->gitName);
-        $node = $reposite->getBlob($this->gitBranch, $this->gitPath);
-        switch ($this->request->ext) {
+        list($branch, $path) = $this->handleBranchAndPath(func_get_args());
+
+        $node = $this->repo->getBlob($branch, $path);
+        $ext = $this->request->ext;
+        switch ($ext) {
             case 'md':
                 require_once VENDOR_ROOT . '/parsedown/Parsedown.php';
                 $parsedown = new \Parsedown();
@@ -123,7 +145,7 @@ class Controller extends \firegit\http\Controller
             case 'pro':
             case 'plist':
             case 'properties':
-                $node['content'] = '<pre class="brush: '.$this->request->ext.'">' . htmlentities($node['content']) . '</pre>';
+                $node['content'] = '<pre class="brush: ' . $ext . '">' . htmlentities($node['content']) . '</pre>';
                 break;
             case 'ico':
             case 'gif':
@@ -133,7 +155,7 @@ class Controller extends \firegit\http\Controller
                 $node['content'] = '<img src="data:image/png;base64,' . base64_encode($node['content']) . '"/>';
                 break;
             default:
-                $node['content'] = '<div class="thumbnail" style="width:600px;height:600px;text-align:center;line-height:600px;font-size:80px;background:#EEE;">' . $this->request->ext . '文件</div>';
+                $node['content'] = '<div class="thumbnail" style="width:600px;height:600px;text-align:center;line-height:600px;font-size:80px;background:#EEE;">' . $ext . '文件</div>';
                 break;
         }
         $this->response->set('node', $node)->setView('git/blob.phtml');
@@ -141,24 +163,24 @@ class Controller extends \firegit\http\Controller
 
     function raw_action()
     {
-        $reposite = new Reposite($this->gitGroup, $this->gitName);
-        $node = $reposite->getBlob($this->gitBranch, $this->gitPath);
+        list($branch, $path) = $this->handleBranchAndPath(func_get_args());
+        $node = $this->repo->getBlob($branch, $path);
         $this->response->setRaw($node['content']);
     }
 
-    function commits_action()
+    function commits_action($branch)
     {
-        $fromCommit = isset($_GET['from']) ? $_GET['from'] : $this->gitBranch;
-        $reposite = new Reposite($this->gitGroup, $this->gitName);
-        $commits = $reposite->listCommits($fromCommit, 20);
+        $this->response->outputs['git']['branch'] = $branch;
+
+        $commits = $this->repo->pagedGetCommits($branch, 20);
 
         $nCommits = array();
-        foreach($commits['commits'] as $commit) {
+        foreach ($commits['commits'] as $commit) {
             $day = date('Y/m/d', $commit['time']);
             $nCommits[$day][] = $commit;
         }
 
-        $branches = $reposite->listBranches();
+        $branches = $this->repo->listBranches();
 
         $this->response
             ->set(array(
@@ -171,11 +193,12 @@ class Controller extends \firegit\http\Controller
             ->setView('git/commits.phtml');
     }
 
-    function commit_action()
+    function commit_action($branch)
     {
-        $reposite = new Reposite($this->gitGroup, $this->gitName);
-        $diffs = $reposite->listDiffs($this->gitBranch);
-        $stats = $reposite->statCommit($this->gitBranch);
+        $this->setBranch($branch);
+
+        $diffs = $this->repo->listDiffs($branch);
+        $stats = $this->repo->statCommit($branch);
         $this->response->set(array(
             'diffs' => $diffs,
             'navType' => 'commit',
@@ -185,8 +208,9 @@ class Controller extends \firegit\http\Controller
 
     function branches_action()
     {
-        $reposite = new Reposite($this->gitGroup, $this->gitName);
-        $branches = $reposite->listBranches();
+        $this->setBranch();
+
+        $branches = $this->repo->listBranches();
         $this->response
             ->set(array(
                 'navType' => 'branch',

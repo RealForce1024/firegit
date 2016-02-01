@@ -14,52 +14,41 @@ class Dispatcher
         set_exception_handler("\\firegit\\http\\Dispatcher::onException");
         set_error_handler("\\firegit\\http\\Dispatcher::onError");
 
-        self::$req = $req = new \firegit\http\Request();
-        self::$res = $res = new \firegit\http\Response();
+        self::$req = $req = new Request();
+        self::$res = $res = new Response();
 
         $path = $req->url;
         $path = trim($path, '/');
 
         $parr = array_diff(explode('/', $path), array('', '.', '..'));
 
+        $ctl = array_shift($parr);
+        if (!$ctl) {
+            $ctl = 'index';
+        }
+        if (!preg_match('#^[a-z][a-z0-9]+$#', $ctl)) {
+            throw new \Exception('dispatcher.illegalCtl ctl='.$ctl);
+        }
         $args = array();
-        foreach ($parr as $key => $value) {
-            if (preg_match('#^([1-9][0-9]*)|([a-z0-9]{32})$#', $value)) {
-                $args[] = $value;
-                unset($parr[$key]);
-            }
-        }
-        $len = count($parr);
-        $ctl = 'index';
-        $method = 'index';
-
-        if ($len == 1) {
-            $ctl = array_pop($parr);
-        } elseif ($len > 1) {
-            $method = array_pop($parr);
-            $ctl = array_pop($parr);
-        }
-        $ctlPath = CTL_ROOT . implode('/', $parr) . '/' . strtolower($ctl) . '/Controller.php';
-        if (!is_readable($ctlPath)) {
-            // 回溯一次
-            $testPath = CTL_ROOT . implode('/', $parr) . '/Controller.php';
-            if (is_readable($testPath)) {
-                $ctlPath = $testPath;
-                array_unshift($args, $method);
-                $method = $ctl;
-                $ctl = array_pop($parr);
+        $method = '';
+        foreach($parr as $key) {
+            if ($method || preg_match('#^([1-9][0-9]*)|([a-z0-9]{20,})$#', $key)) {
+                $args[] = $key;
             } else {
-                throw new \Exception('firegit.u_notfound path=' . $ctlPath);
+                $method = $key;
             }
+        }
+        if (!$method) {
+            $method = 'index';
+        }
+
+        $ctlPath = CTL_ROOT . strtolower($ctl). '/Controller.php';
+        if (!is_readable($ctlPath)) {
+            throw new \Exception('firegit.u_notfound path=' . $ctlPath);
         }
         $className = implode(
             "\\",
-            array_merge(
-                array('firegit', 'app', 'ctl'),
-                array_map('ucfirst', $parr),
-                array(ucfirst($ctl)),
-                array('Controller')
-            )
+            array('firegit', 'app', 'ctl', ucfirst($ctl), 'Controller')
         );
 
         require_once $ctlPath;

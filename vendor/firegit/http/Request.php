@@ -68,8 +68,68 @@ class Request
                 $this->contentType = 'Content-type: text/plain; charset=' . $this->charset;
                 break;
         }
-        if (strpos($this->url, '.') !== false) {
-            $this->url = substr($this->uri, 0, -(strlen($ext) + 1));
+    }
+
+    /**
+     * 获取get参数
+     * @param $key
+     * @param null $def
+     * @return null
+     */
+    function get($key, $def = null)
+    {
+        if (isset($_GET[$key])) {
+            return $_GET[$key];
         }
+        return $def;
+    }
+
+    /**
+     * 一次性获取多个get参数
+     */
+    function gets()
+    {
+        $args = func_get_args();
+        $ret = array();
+        foreach($args as $key) {
+            if (isset($_GET[$key])) {
+                $ret[$key] = $_GET[$key];
+            } else {
+                $ret[$key] = null;
+            }
+        }
+        return $ret;
+    }
+
+    /**
+     * 获取post参数
+     * @param $key
+     * @param null $def
+     * @return null
+     */
+    function post($key, $def = null)
+    {
+        if (isset($_POST[$key])) {
+            return $_POST[$key];
+        }
+        return $def;
+    }
+
+    /**
+     * 一次性获取多个post参数
+     * @return array
+     */
+    function posts()
+    {
+        $args = func_get_args();
+        $ret = array();
+        foreach($args as $key) {
+            if (isset($_POST[$key])) {
+                $ret[$key] = $_POST[$key];
+            } else {
+                $ret[$key] = null;
+            }
+        }
+        return $ret;
     }
 }

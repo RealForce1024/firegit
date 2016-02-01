@@ -1,8 +1,6 @@
 <?php
 namespace firegit\git;
 
-use \firegit\git\Util;
-
 class Reposite
 {
     var $group;
@@ -47,7 +45,7 @@ class Reposite
         $modules = null;
         foreach ($lines as $key => $line) {
             $node = $this->parseLsLine($line);
-            switch($node['type']) {
+            switch ($node['type']) {
                 case 'commit':
                     if ($modules === null) {
                         $modules = $this->listModules($branch);
