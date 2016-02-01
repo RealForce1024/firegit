@@ -367,7 +367,7 @@ class Controller extends \firegit\http\Controller
         }
         return $nCommits;
     }
-}
+    
     /**
      * 文件追责
      */
@@ -397,7 +397,5 @@ class Controller extends \firegit\http\Controller
                 'path' => $path,
             ))
             ->setView('git/history.phtml');
-
     }
-
 }
