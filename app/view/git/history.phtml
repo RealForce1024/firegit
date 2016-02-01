@@ -1,0 +1,35 @@
+<div id="commits-list">
+
+    <br/>
+    <pre><?=$this->v['path']?></pre>
+    <?php if(!empty($this->v['history'])){
+            foreach($this->v['history'] as $history_key=>$history_val){
+    ?>
+    <br/>
+    <div class="col-md-2">
+        <h4>
+            <i class="fa fa-calendar"></i>
+            <span><?= $history_val[2]?></span>
+        </h4>
+    </div>
+    <div class="col-md-10">
+        <ul class="bordered-list">
+            <li class="commit js-toggle-container">
+                <div class="commit-row-title">
+                    <span class="commit-author-name"><?= $history_val[1]?></span>
+                    &nbsp;
+                    <div class="notes_count">
+                    </div>
+                </div>
+                <div class="commit-row-description js-toggle-content">
+                    <?php $hash = explode(' ',$history_val[0]);?>
+                    <pre><a class="commit_short_id" href="/ronnie/firegit/commit/<?=$hash[1]?>"><?= substr($hash[1], 0 , 8).'...'?></a><br>*<?= $history_val[4]?></pre>
+                </div>
+
+            </li>
+        </ul>
+    </div>
+
+    <?php }
+    }?>
+</div>

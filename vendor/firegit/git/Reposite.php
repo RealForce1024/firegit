@@ -278,13 +278,54 @@ class Reposite
             'time' => $arr[1],
             'author' => $arr[2],
             'msg' => isset($arr[3]) ? $arr[3] : '',
-            'files' => array()
+            'files' => array(),
+            'total' => 0,
+            'add' => 0,
+            'delete' => 0
         );
         $info = self::parseDiffStatLines($lines);
-        foreach($info as $k => $v) {
+        foreach ($info as $k => $v) {
             $ret[$k] = $v;
+            array_shift($lines);
+            $line = array_pop($lines);
+            // 2 files changed, 5 insertions(+), 6 deletions(-)
+            $arr = array_map('trim', explode(',', $line));
+            foreach ($arr as $a) {
+                list($num, $desc) = explode(' ', $a, 2);
+                switch ($desc) {
+                    case 'file changed':
+                        $ret['total'] = $num;
+                        break;
+                    case 'insertions(+)':
+                        $ret['add'] = $num;
+                        break;
+                    case 'deletion(-)':
+                        $ret['delete'] = $num;
+                        break;
+                }
+            }
+            foreach ($lines as $line) {
+                list($file, $stat) = array_map('trim', explode('|', $line, 2));
+                list($num, $changes) = explode(' ', $stat, 2);
+                if ($num == 'Bin') {
+                    list($from, $to) = explode(' -> ', $changes, 2);
+                    $ret['files'][$file] = array(
+                        'type' => 'bin',
+                        'from' => $from,
+                        'to' => $to,
+                    );
+                } else {
+                    $stats = count_chars($changes, 1);
+                    $ret['files'][$file] = array(
+                        'type' => 'text',
+                        'total' => $num,
+                        'add' => isset($stats[43]) ? $stats[43] : 0,
+                        'delete' => isset($stats[45]) ? $stats[45] : 0,
+                    );
+                }
+            }
+            return $ret;
         }
-        return $ret;
     }
 
     /**
@@ -483,4 +524,55 @@ class Reposite
         }
         return $ret;
     }
+
+    /**
+     * 文件追责
+     * @param $branch
+     * @param $path
+     * @return string
+     */
+    function getBlame($path)
+    {
+
+        $cmd = sprintf('git blame ../%s', $path);
+        exec($cmd, $lines, $code);
+        // 没有找到该分支的任何文件
+        if ($code !== 0) {
+            $lines = array();
+            return $lines;
+        }
+        return $lines;
+        print_r($lines);die;
+        $return_blame = array();
+        $return_blames = array();
+        for ($i = 0, $l = count($lines); $i < $l; $i++) {
+            $return_blame[$i] = explode(' ',$lines[$i],2);
+            $return_blames[$i]['hase'] = $return_blame[$i][0];//哈希值
+            $pos = strpos($return_blame[$i][1],')')+1;
+            $name = rtrim(ltrim(mb_substr($return_blame[$i][1] , 0 ,$pos),'('),')');
+            $return_blames[$i]['name_time'] = $name;
+            $content = mb_substr($return_blame[$i][1] , $pos);
+            $return_blames[$i]['contents'] = $content ? $content : array();
+
+        }
+        $arr=array();
+        foreach ($return_blames as $k=>$v){
+            $arr[] = $v['hase'].$v['name_time'].$v['contents'];
+
+        }
+        print_r($arr);die;
+        return $return_blames;
+    }
+
+    /**
+     * 代码历史
+     */
+    function getHistory($path)
+    {
+        $cmd = sprintf('git log ../%s', $path);
+        exec($cmd, $lines, $code);
+        $lines = array_chunk($lines,6);
+        return $lines;
+    }
+
 }
