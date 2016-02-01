@@ -3,6 +3,9 @@ var del = require('del');
 var exec = require('child_process').execSync;
 var less = require('gulp-less');
 var fs = require('fs');
+var sourcemap = require('gulp-sourcemaps');
+var uglify = require('gulp-uglify');
+var concat = require('gulp-concat');
 
 gulp.task('dist', function () {
 
@@ -29,6 +32,9 @@ gulp.task('dist', function () {
 
     console.log('发布firegit');
     distFiregit();
+
+    console.log('发布hapj');
+    distHapj();
 });
 
 /**
@@ -64,6 +70,46 @@ function distFiregit() {
     gulp.src('resource/less/**/*.less')
         .pipe(less())
         .pipe(gulp.dest('public/static/firegit/css/'));
+}
+
+/**
+ * 发布hapj
+ */
+function distHapj() {
+    "use strict";
+    
+    gulp.src([
+            'bower_components/hapj/src/js/hapj.js',
+            'bower_components/hapj/src/js/lib/md5.js',
+            'bower_components/hapj/src/js/lib/serial.js',
+            'bower_components/hapj/src/js/core/hook.js',
+            'bower_components/hapj/src/js/core/conf.js',
+            'bower_components/hapj/src/js/core/browser.js',
+            'bower_components/hapj/src/js/core/string.js',
+            'bower_components/hapj/src/js/core/array.js',
+            'bower_components/hapj/src/js/core/object.js',
+            'bower_components/hapj/src/js/core/date.js',
+            'bower_components/hapj/src/js/core/json.js',
+            'bower_components/hapj/src/js/core/log.js',
+            'bower_components/hapj/src/js/core/page.js',
+            'bower_components/hapj/src/js/core/cache.js',
+            'bower_components/hapj/src/js/core/hook.js',
+            'bower_components/hapj/src/js/hapj.hook.js',
+        ])
+        .pipe(sourcemap.init({
+            charset: 'utf8'
+        }))
+        .pipe(uglify())
+        .pipe(concat('hapj.min.js'))
+        .pipe(sourcemap.write('./'))
+        .pipe(gulp.dest('public/static/hapj/js'));
+
+    gulp.src(['bower_components/hapj/src/js/ui/*.js'])
+        .pipe(gulp.dest('public/static/hapj/js/ui'));
+
+    gulp.src('bower_components/hapj/src/css/**/*.less')
+        .pipe(less())
+        .pipe(gulp.dest('public/static/hapj/css'));
 }
 
 

@@ -1,4 +1,4 @@
-!function ($) {
+jQuery(function() {
     "use strict";
 
     $.firegit = {
@@ -20,29 +20,7 @@
         return result;
     };
 
-
-    $(function () {
-        $('*[data-original]').lazyload();
-
-        $('*[data-hook]').each(function () {
-            var hook = this.getAttribute('data-hook');
-            var option = this.getAttribute('data-hook-option');
-            if (option) {
-                option = eval('(' + option + ')');
-            } else {
-                option = {};
-            }
-            switch (hook) {
-                case 'ajaxable':
-                    doAjaxableHook(this, option);
-                    break;
-                case 'dialog':
-                    doDialogHook(this, option);
-                    break;
-            }
-        });
-
-
+    $(function() {
         SyntaxHighlighter.autoloader.apply(null, path(
             'applescript mm m               @AppleScript',
             'actionscript3 as3          @AS3',
@@ -87,17 +65,21 @@
                 window.currentDialog.close();
             }
             if (ret.status == 'firegit.ok') {
-                dialog({
-                    title: '操作成功',
-                    okValue: '确认',
-                    content: option.okText ? option.okText : '操作成功',
-                    ok: function () {
-                        location.reload();
-                    },
-                    onClose: function () {
-                        location.reload();
-                    }
-                }).width(400).show();
+                if (option.success) {
+                    option.success(ret);
+                } else {
+                    dialog({
+                        title: '操作成功',
+                        okValue: '确认',
+                        content: option.okText ? option.okText : '操作成功',
+                        ok: function () {
+                            location.reload();
+                        },
+                        onClose: function () {
+                            location.reload();
+                        }
+                    }).width(400).show();
+                }
             } else {
                 var detail = '';
                 if (ret.status in $.firegit.errMap) {
@@ -118,8 +100,11 @@
         });
     }
 
-    function doAjaxableHook(node, option) {
-        var nodeName = node.nodeName, dlg;
+    /**
+     * 异步提交的hook
+     */
+    hapj.hook.set('hook.ajaxable', function(node, option) {
+        var nodeName = node[0].nodeName, dlg;
         switch (nodeName) {
             case 'A':
                 if (option.container) {
@@ -170,17 +155,17 @@
                     doLinkPost(this.action, option, $(this).serializeArray());
                     return false;
                 });
+                break;
         }
-    }
+    });
 
     /**
-     * 显示对话框
-     * @param node
-     * @param option
+     * 对话框的hook
      */
-    function doDialogHook(node, option) {
-        $(node).on('click', function () {
+    hapj.hook.set('hook.dialog', function(elem, option) {
+        $(elem).on('click', function () {
             window.currentDialog = dialog(option).show();
-        })
-    }
-}(jQuery);
+        });
+    });
+
+});
