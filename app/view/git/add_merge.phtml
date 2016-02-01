@@ -1,0 +1,84 @@
+<h1>提交合并请求</h1>
+<form method="post"
+      class="form-horizontal"
+      data-hook="ajaxable"
+      data-hook-id="mergeform"
+      action="<?= $this->v['prefix'] ?>_add_merge">
+    <input type="hidden" name="orig" value="<?= $this->v['orig'] ?>">
+    <input type="hidden" name="dest" value="<?= $this->v['dest'] ?>">
+    <div class="form-group">
+        <label class="col-sm-1 control-label">简介</label>
+        <div class="col-sm-5">
+            <input type="text" class="form-control" required autofocus name="title" value=""/>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-1 control-label">详细描述</label>
+        <div class="col-sm-6">
+            <textarea class="form-control" name="desc" value="" rows="4"></textarea>
+        </div>
+    </div>
+    <div>
+        <div class="col-sm-4 col-sm-offset-1">
+            <input type="submit" value="提交"
+                   class="btn btn-lg btn-primary" <?= empty($this->v['commits']) ? ' disabled' : '' ?>/>
+            <?php if (empty($this->v['commits'])): ?>
+                <div class="text-danger"><code><?= $this->v['orig'] ?></code>和<code><?= $this->v['dest'] ?></code>分支完全相同，不用合并
+                </div>
+            <?php endif ?>
+        </div>
+    </div>
+</form>
+
+<div class="clearfix"></div>
+<ul class="nav nav-tabs" id="compareNav">
+    <li class="active"><a href="#commitList">提交</a></li>
+    <li><a href="#diffList">变化</a></li>
+</ul>
+
+<div id="commitList" class="navList">
+    <table class="table table-hover table-striped table-responsive">
+        <?php include __DIR__ . '/components/commits.phtml' ?>
+    </table>
+</div>
+
+<div id="diffList" class="navList"
+     data-href="<?= $this->v['prefix'] ?>diff/?orig=<?= $this->v['orig'] ?>&dest=<?= $this->v['dest'] ?>"
+></div>
+
+<script>
+    !function($) {
+        var nav = $('#compareNav'), loaded = false;
+        nav.delegate('a', 'click', function () {
+            var href = this.getAttribute('href');
+            nav.find('li').removeClass('active');
+            this.parentNode.className = 'active';
+            $('.navList').hide();
+            var node = $(href);
+            node.show();
+            if (href == '#diffList' && !loaded) {
+                loaded = true;
+                $.get(node.data('href'), function(html) {
+                    node.html(html);
+                });
+            }
+        });
+
+        hapj.conf.set('hook.mergeform', {
+            success: function(ret) {
+                dialog({
+                    content:'添加合并请求成功',
+                    title:'操作成功',
+                    width:300,
+                    okText:'确定',
+                    ok: function() {
+                        location.href = '<?=$this->v['prefix']?>merge/' + ret.data.merge_id;
+                    }
+                }).show();
+            }
+        });
+    }(jQuery);
+
+</script>
+
+

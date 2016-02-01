@@ -72,7 +72,7 @@ class Reposite
      * @param int $num
      * @return array
      */
-    function listCommits($hash, $num = 40)
+    function pagedGetCommits($hash, $num = 40)
     {
         chdir($this->dir);
         $cmd = sprintf('git log --oneline -%d %s --format="%s"', $num + 1, $hash, '%H %ct %an %s');
@@ -82,6 +82,21 @@ class Reposite
         if (count($lines) > $num) {
             $next = explode(' ', array_pop($lines), 2);
         }
+        $commits = self::parseCommitsLines($lines);
+        return array(
+            'commits' => $commits,
+            'next' => $next ? $next[0] : 0
+        );
+    }
+
+    /**
+     * 解析commit的行
+     * @param $lines
+     * @return array
+     */
+    private function parseCommitsLines($lines)
+    {
+        $commits = array();
         foreach ($lines as $line) {
             $arr = explode(' ', $line, 4);
             $commits[] = array(
@@ -91,10 +106,21 @@ class Reposite
                 'msg' => isset($arr[3]) ? $arr[3] : '',
             );
         }
-        return array(
-            'commits' => $commits,
-            'next' => $next ? $next[0] : 0
-        );
+        return $commits;
+    }
+
+    /**
+     * 列出两个commit中间的提交
+     * @param $hashStart
+     * @param $hashEnd
+     * @return array
+     */
+    function listCommits($hashStart, $hashEnd)
+    {
+        chdir($this->dir);
+        $cmd = sprintf('git log --oneline --format="%s" %s..%s', '%H %ct %an %s', $hashStart, $hashEnd);
+        exec($cmd, $lines, $code);
+        return self::parseCommitsLines($lines);
     }
 
     /**
@@ -166,7 +192,7 @@ class Reposite
         $lines = explode("\n", $node['content']);
         $modules = array();
         $module = array();
-        foreach($lines as $line) {
+        foreach ($lines as $line) {
             if (strncmp($line, '[submodule ', 11) === 0) {
                 if (!empty($module)) {
                     $modules[$module['name']] = $module;
@@ -254,43 +280,9 @@ class Reposite
             'msg' => isset($arr[3]) ? $arr[3] : '',
             'files' => array()
         );
-        array_shift($lines);
-        $line = array_pop($lines);
-        // 2 files changed, 5 insertions(+), 6 deletions(-)
-        $arr = array_map('trim', explode(',', $line));
-        foreach ($arr as $a) {
-            list($num, $desc) = explode(' ', $a, 2);
-            switch ($desc) {
-                case 'files changed':
-                    $ret['total'] = $num;
-                    break;
-                case 'insertions(+)':
-                    $ret['add'] = $num;
-                    break;
-                case 'deletions(-)':
-                    $ret['delete'] = $num;
-                    break;
-            }
-        }
-        foreach ($lines as $line) {
-            list($file, $stat) = array_map('trim', explode('|', $line, 2));
-            list($num, $changes) = explode(' ', $stat, 2);
-            if ($num == 'Bin') {
-                list($from, $to) = explode(' -> ', $changes, 2);
-                $ret['files'][$file] = array(
-                    'type' => 'bin',
-                    'from' => $from,
-                    'to' => $to,
-                );
-            } else {
-                $stats = count_chars($changes, 1);
-                $ret['files'][$file] = array(
-                    'type' => 'text',
-                    'total' => $num,
-                    'add' => isset($stats[43]) ? $stats[43] : 0,
-                    'delete' => isset($stats[45]) ? $stats[45] : 0,
-                );
-            }
+        $info = self::parseDiffStatLines($lines);
+        foreach($info as $k => $v) {
+            $ret[$k] = $v;
         }
         return $ret;
     }
@@ -315,7 +307,6 @@ class Reposite
         $blocks = null;
         $fromLine = 0;
         $toLine = 0;
-//        var_dump($lines);
         for ($i = 0, $l = count($lines); $i < $l; $i++) {
             $line = $lines[$i];
             if (strpos($line, 'diff --git ') === 0) {
@@ -417,7 +408,79 @@ class Reposite
         if (!empty($blocks)) {
             $diff['blocks'][] = $blocks;
         }
-        $diffs[] = $diff;
+        if (!empty($diff)) {
+            $diffs[] = $diff;
+        }
         return $diffs;
+    }
+
+    /**
+     * 统计变化
+     * @param $commitFrom
+     * @param null $commitEnd
+     * @return array
+     */
+    function statDiffs($commitFrom, $commitEnd = null)
+    {
+        if ($commitEnd === null) {
+            $commitEnd = $commitFrom;
+            $commitFrom = $commitFrom . '^';
+        }
+        chdir($this->dir);
+        $cmd = sprintf('git diff %s..%s --stat', $commitFrom, $commitEnd);
+        exec($cmd, $lines, $code);
+        return self::parseDiffStatLines($lines);
+    }
+
+    private static function parseDiffStatLines($lines)
+    {
+        $line = array_pop($lines);
+        // 2 files changed, 5 insertions(+), 6 deletions(-)
+        $arr = array_map('trim', explode(',', $line));
+        $ret = array(
+            'total' => 0,
+            'delete' => 0,
+            'add' => 0,
+        );
+        foreach ($arr as $a) {
+            list($num, $desc) = explode(' ', $a, 2);
+            switch ($desc) {
+                case 'files changed':
+                    $ret['total'] = $num;
+                    break;
+                case 'insertions(+)':
+                case 'insertion(+)':
+                    $ret['add'] = $num;
+                    break;
+                case 'deletions(-)':
+                case 'deletion(-)':
+                    $ret['delete'] = $num;
+                    break;
+            }
+        }
+        foreach ($lines as $line) {
+            if (!$line) {
+                continue;
+            }
+            list($file, $stat) = array_map('trim', explode('|', $line, 2));
+            list($num, $changes) = explode(' ', $stat, 2);
+            if ($num == 'Bin') {
+                list($from, $to) = explode(' -> ', $changes, 2);
+                $ret['files'][$file] = array(
+                    'type' => 'bin',
+                    'from' => $from,
+                    'to' => $to,
+                );
+            } else {
+                $stats = count_chars($changes, 1);
+                $ret['files'][$file] = array(
+                    'type' => 'text',
+                    'total' => $num,
+                    'add' => isset($stats[43]) ? $stats[43] : 0,
+                    'delete' => isset($stats[45]) ? $stats[45] : 0,
+                );
+            }
+        }
+        return $ret;
     }
 }

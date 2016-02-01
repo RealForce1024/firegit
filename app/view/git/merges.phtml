@@ -1,0 +1,70 @@
+<div class="pull-right" style="padding: 6px;">
+    <a id="addNewBranch" class="btn btn-primary" data-hook="dialog" data-hook-option="{
+        content:$('#dialog'),
+        title:'添加合并请求',
+        width:400
+    }"><em class="glyphicon glyphicon-plus"></em>添加合并请求</a>
+</div>
+<table class="clearfix table table-striped table-hover table-responsive">
+    <?php foreach ($this->v['merges'] as $merge): ?>
+        <tr>
+            <td><?= $merge['merge_id'] ?></td>
+            <td><a href="<?=$this->v['prefix']?>merge/<?=$merge['merge_id']?>"><?=$merge['title']?></a></td>
+            <td>
+                <a href="<?=$this->v['prefix']?>merge/<?=$merge['merge_id']?>/edit">编辑</a>
+            </td>
+        </tr>
+    <?php endforeach ?>
+</table>
+
+<div id="dialog" style="display: none">
+    <form id="formMerge"
+          class="form-horizontal"
+          method="get"
+          action="<?= $this->v['prefix'] ?>add_merge"
+    >
+        <div class="form-group">
+            <label for="iptFrom" class="col-sm-4 control-label">来源分支</label>
+            <div class="col-sm-8">
+                <select class="form-control" name="orig" required>
+                    <option value="">选择来源分支</option>
+                    <?php foreach ($this->v['branches'] as $name => $branch):
+                        if ($name == 'master') {
+                            continue;
+                        }
+                        ?>
+                        <option value="<?= $branch['name'] ?>"><?= $branch['name'] ?></option>
+                    <?php endforeach ?>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="iptFrom" class="col-sm-4 control-label">目标分支</label>
+            <div class="col-sm-8">
+                <select class="form-control" name="dest" required id="destBranch">
+                    <option value="">选择目标分支</option>
+                    <?php foreach ($this->v['branches'] as $branch): ?>
+                        <option value="<?= $branch['name'] ?>"><?= $branch['name'] ?></option>
+                    <?php endforeach ?>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-9 col-sm-offset-3">
+                <input type="submit" value="比较差异" class="btn btn-lg btn-primary"/>
+            </div>
+        </div>
+    </form>
+</div>
+<script>
+$('#formMerge').on('submit', function() {
+    if (this.orig.value == this.dest.value) {
+        dialog({
+            align:'right',
+            content:'不能选择同一个分支',
+            quickClose: true
+        }).show(document.getElementById('destBranch'));
+        return false;
+    }
+});
+</script>
