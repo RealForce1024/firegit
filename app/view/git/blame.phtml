@@ -1,21 +1,9 @@
 <?// print_r($this->v['blame']);?>
-<style>
-pre{
-    color: #AAA;
-    white-space: pre;
-    width: 40px;
-}
-.con{
 
-}
-</style>
 <table class="table table-striped table-responsive" id="commitList">
 <?php foreach($this->v['blame'] as $blame_key=>$blame_val){?>
-    <tr>
-        <td><?=$blame_val['hase']?></td>
-<!--        <td><pre>2</pre></td>-->
-        <td class="con"><?=$blame_val['name_time']?></td>
-        <td class="con"><?=$blame_val['contents']?></td>
+    <tr class="block block-start">
+        <td class="code"><?= htmlentities($blame_val) ?></td>
     </tr>
     <?php }?>
 </table>

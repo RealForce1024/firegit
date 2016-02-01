@@ -341,7 +341,7 @@ class Controller extends \firegit\http\Controller
     function blame_action()
     {
         list($branch, $path) = $this->handleBranchAndPath(func_get_args());
-        $blame = $this->repo->getBlame($this->gitPath);
+        $blame = $this->repo->getBlame($path);
         $this->response
             ->set(array(
                 'blame' => $blame,
@@ -356,13 +356,12 @@ class Controller extends \firegit\http\Controller
      */
     function history_action()
     {
-
-        $reposite = new Reposite($this->gitGroup, $this->gitName);
-        $history = $reposite->getHistory($this->gitPath);
+        list($branch, $path) = $this->handleBranchAndPath(func_get_args());
+        $history = $this->repo->getHistory($path);
         $this->response
             ->set(array(
                 'history' => $history,
-                'path' => $this->gitPath,
+                'path' => $path,
             ))
             ->setView('git/history.phtml');
 
