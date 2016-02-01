@@ -170,13 +170,12 @@ class Controller extends \firegit\http\Controller
         $this->response->outputs['git']['branch'] = $branch;
 
         $commits = $this->repo->pagedGetCommits($branch, 20);
-
         $branches = $this->repo->listBranches();
 
         $this->response
             ->set(array(
                 'navType' => 'commit',
-                'commits' => $this->packCommits($commits),
+                'commits' => $this->packCommits($commits['commits']),
                 'branches' => $branches,
                 'nextHash' => $commits['next'],
                 'branchType' => 'commits',
@@ -367,7 +366,7 @@ class Controller extends \firegit\http\Controller
         }
         return $nCommits;
     }
-    
+
     /**
      * 文件追责
      */
