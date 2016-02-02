@@ -46,7 +46,8 @@ jQuery(function() {
             'scala                      @Scala',
             'sql                        @Sql',
             'vb vbnet                   @Vb',
-            'xml xib xhtml plist xslt html project buildpath buildpath     @Xml'
+            'xml xib xhtml plist xslt html project buildpath buildpath     @Xml',
+            'go                         @Go'
         ));
         SyntaxHighlighter.config.strings.viewSource = '查看源代码';
         SyntaxHighlighter.all();
