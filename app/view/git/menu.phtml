@@ -1,0 +1,53 @@
+<br/>
+<div class="panel panel-info">
+    <div class="panel-heading">
+        <div class="panel-title row">
+
+            <div class="col-md-6">
+                <small class="glyphicon glyphicon-file text-info"></small>
+                <?= $this->v['git']['path'] ?>
+                <small class="glyphicon glyphicon-info-sign"></small>
+                <small><?= isset($this->v['node']['size']) ? $this->v['node']['size'] : '' ?></small>
+            </div>
+            <?php
+            $model = '';
+            if (isset($this->v['model'])) {
+                switch ($this->v['model']) {
+                    case 'edit':
+                        $model = 'edit';
+                        break;
+                    case 'raw':
+                        $model = 'raw';
+                        break;
+                    case 'blame':
+                        $model = 'blame';
+                        break;
+                    case 'history':
+                        $model = 'history';
+                        break;
+                    default :
+                        $model = '';
+                }
+            }
+            ?>
+            <div class="col-md-4 col-md-offset-2">
+                <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
+                    <div class="btn-group" role="group" aria-label="First group" style="font-size:12px;">
+                        <a class="btn btn-default<?= $model == 'edit' ? ' bg' : '' ?>"
+                           href="<?= $this->v['prefix'] ?>edit/<?= $this->v['git']['path'] ?>"><em
+                                class="glyphicon glyphicon-edit"></em>编辑</a>
+                        <a class="btn btn-default<?= $model == 'raw' ? ' bg' : '' ?>"
+                           href="<?= $this->v['prefix'] ?>raw/<?= $this->v['git']['branch'] ?>/<?= $this->v['git']['path'] ?>"
+                           target="_blank">原始</a>
+                        <a class="btn btn-default<?= $model == 'blame' ? ' bg' : '' ?>"
+                           href="<?= $this->v['prefix'] ?>blame/<?= $this->v['git']['branch'] ?>/<?= $this->v['git']['path'] ?>">追责</a>
+                        <a class="btn btn-default<?= $model == 'history' ? ' bg' : '' ?>"
+                           href="<?= $this->v['prefix'] ?>history/<?= $this->v['git']['branch'] ?>/<?= $this->v['git']['path'] ?>"><em
+                                class="glyphicon glyphicon-time"></em> 历史</a>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

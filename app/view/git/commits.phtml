@@ -2,11 +2,16 @@
 <table class="table table-striped table-responsive" id="commitList">
     <?php endif ?>
 
+    <?php
+        if (isset($this->v['show_menu'])):
+            include __DIR__.'/menu.phtml';
+        endif
+    ?>
     <?php include __DIR__.'/components/commits.phtml'?>
 
     <?php if (!$this->v['isAjax']): ?>
 </table>
-<?php if ($this->v['nextHash']): ?>
+<?php if (isset($this->v['nextHash']) && !empty($this->v['nextHash'])): ?>
     <div class="text-center">
         <a id="nextCommitLink" data-hook="ajaxable" data-hook-option="{
             container: '#commitList>tbody'

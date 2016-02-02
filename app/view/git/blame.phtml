@@ -1,8 +1,8 @@
 <?// print_r($this->v['blame']);?>
+<?php include __DIR__.'/menu.phtml'?>
 <ul class="list-unstyled">
     <li>
         <div class="panel panel-default">
-            <pre><?=$this->v['path']?></pre>
             <div class="panel-body">
                <pre>  <table>
                     <?php foreach($this->v['blame'] as $blame_key=>$blame_val){?>

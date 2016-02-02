@@ -378,7 +378,7 @@ class Controller extends \firegit\http\Controller
         $this->response
             ->set(array(
                 'blame' => $blame,
-                'path' => $path,
+                'model' => 'blame',
             ))
             ->setView('git/blame.phtml');
     }
@@ -393,8 +393,9 @@ class Controller extends \firegit\http\Controller
         $history = $this->repo->getHistory($path);
         $this->response
             ->set(array(
+                'show_menu' => 'show',
+                'model' => 'history',
                 'commits' => $this->packCommits($history['commits']),
-                'path' => $path,
             ))
             ->setView('git/commits.phtml');
     }
