@@ -142,6 +142,7 @@ class Controller extends \firegit\http\Controller
             case 'pro':
             case 'plist':
             case 'properties':
+            case 'go':
                 $node['content'] = '<pre class="brush: ' . $ext . '">' . htmlentities($node['content']) . '</pre>';
                 break;
             case 'ico':
