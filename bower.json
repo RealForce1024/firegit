@@ -26,6 +26,7 @@
     "jquery_lazyload": "jquery.lazyload#~1.9.7",
     "SyntaxHighlighter": "~3.0.83",
     "artDialog": "~6.0.4",
-    "hapj": "http://gitlab.hapn.cc/static/hapj.git"
+    "hapj": "http://gitlab.hapn.cc/static/hapj.git",
+    "shBrushGo": "https://github.com/xeonx/shBrushGo.git"
   }
 }

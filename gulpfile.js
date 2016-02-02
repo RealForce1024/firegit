@@ -48,6 +48,7 @@ function distShl() {
             'bower_components/SyntaxHighlighter/scripts/shLegacy.js',
             'bower_components/SyntaxHighlighter/scripts/XRegExp.js',
             'bower_components/SyntaxHighlighter/scripts/shBrush*.js',
+            'bower_components/shBrushGo/shBrushGo.js',
             'resource/patch/SyntaxHighlighter/shAutoloader.js'
         ])
         .pipe(gulp.dest('public/static/SyntaxHighlighter/js/'));
