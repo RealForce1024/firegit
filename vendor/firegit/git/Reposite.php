@@ -296,10 +296,12 @@ class Reposite
                     case 'file changed':
                         $ret['total'] = $num;
                         break;
+                    case 'insertion(+)':
                     case 'insertions(+)':
                         $ret['add'] = $num;
                         break;
                     case 'deletion(-)':
+                    case 'deletions(-)':
                         $ret['delete'] = $num;
                         break;
                 }
@@ -548,10 +550,10 @@ class Reposite
         for ($i = 0, $l = count($lines); $i < $l; $i++) {
             $return_blame[$i] = explode(' ',$lines[$i],2);
             $return_blames[$i]['hase'] = $return_blame[$i][0];//哈希值
-            $pos = strpos($return_blame[$i][1],')')+1;
-            $name = rtrim(ltrim(mb_substr($return_blame[$i][1] , 0 ,$pos),'('),')');
+            $index = strpos($return_blame[$i][1],')')+1;
+            $name = rtrim(ltrim(mb_substr($return_blame[$i][1] , 0 ,$index),'('),')');
             $return_blames[$i]['name_time'] = $name;
-            $content = mb_substr($return_blame[$i][1] , $pos);
+            $content = mb_substr($return_blame[$i][1] , $index);
             $return_blames[$i]['contents'] = $content ? $content : array();
 
         }
@@ -569,10 +571,13 @@ class Reposite
      */
     function getHistory($path)
     {
-        $cmd = sprintf('git log ../%s', $path);
+        chdir($this->dir);
+        $cmd = sprintf('git log --oneline --format="%s" -- %s','%H %ct %an %s', $path);
         exec($cmd, $lines, $code);
-        $lines = array_chunk($lines,6);
-        return $lines;
+        $commits = self::parseCommitsLines($lines);
+        return array(
+            'commits' => $commits,
+        );
     }
 
 }

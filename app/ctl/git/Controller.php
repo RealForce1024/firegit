@@ -392,9 +392,10 @@ class Controller extends \firegit\http\Controller
         $history = $this->repo->getHistory($path);
         $this->response
             ->set(array(
-                'history' => $history,
+                'commits' => $this->packCommits($history['commits']),
                 'path' => $path,
             ))
-            ->setView('git/history.phtml');
+            ->setView('git/commits.phtml');
     }
+
 }
