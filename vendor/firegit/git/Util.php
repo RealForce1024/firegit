@@ -3,6 +3,28 @@ namespace firegit\git;
 
 class Util
 {
+    const BRANCH_PREFIX = 'refs/heads/';
+    const TAG_PREFIX = 'refs/tags/';
+    /**
+     * 获取正常的分支名称
+     * @param $branch
+     * @return string
+     */
+    public static function normalBranch($branch)
+    {
+        return self::BRANCH_PREFIX.$branch;
+    }
+
+    /**
+     * 获取正常的标签名称
+     * @param $tag
+     * @return string
+     */
+    public static function normalTag($tag)
+    {
+        return self::TAG_PREFIX.$tag;
+    }
+
     /**
      * 将git的路径调整为正常的路径
      * @param $path

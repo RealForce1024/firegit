@@ -25,7 +25,9 @@ class Hook
             }
             list($oref, $nref, $branch) = explode(' ', $line);
 
-            if ($branch != 'refs/heads/master') {
+            if (strpos($branch, Util::TAG_PREFIX) === 0) {
+              // TODO
+            } elseif ($branch != Util::normalBranch('master')) {
                 // 检查分支是否存在
                 system('git show-branch ' . $branch . ' > /dev/null 2>&1', $code);
                 if ($code !== 0) {
