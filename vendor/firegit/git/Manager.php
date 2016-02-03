@@ -19,7 +19,8 @@ class Manager
         foreach ($args as $key => $value) {
             $argStrs[] = '-d ' . $key . ':' . $value;
         }
-        $cmd = sprintf('php %s --group %s --name %s --action %s %s',
+        $cmd = sprintf('%s php %s --group %s --name %s --action %s %s',
+            BIN_ROOT . '/chother',
             BIN_ROOT . '/GitManager.php',
             $group,
             $name,
