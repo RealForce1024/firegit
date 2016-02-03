@@ -103,7 +103,7 @@ HOOK;
             return 1;
         }
         chdir($gitDir);
-        $cmd = sprintf('su git -c "git branch %s %s"', Util::normalBranch($dest), Util::normalBranch($orig));
+        $cmd = sprintf('su git -c "git branch %s %s"', Util::normalBranch($dest), $orig);
         exec($cmd, $outputs, $code);
         return $code;
     }
@@ -122,7 +122,7 @@ HOOK;
             return 1;
         }
         chdir($gitDir);
-        $cmd = sprintf('su git -c "git branch -d %s"', Util::normalBranch($branch));
+        $cmd = sprintf('su git -c "git branch -d %s"', $branch);
         file_put_contents(LOG_ROOT . 'cmd', $cmd);
         exec($cmd, $outputs, $code);
         return $code;
