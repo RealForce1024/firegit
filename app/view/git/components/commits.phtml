@@ -4,7 +4,9 @@
     </tr>
     <?php foreach ($_commits as $commit): ?>
         <tr>
-            <td><a href="<?= $this->v['prefix'] ?>commit/<?= $commit['hash'] ?>"><?= substr($commit['hash'], 0,
+            <td>
+                <a href="<?= $this->v['prefix'] ?><?= isset($this->v['blob']) ? 'blob' : 'commit' ?>/<?= $commit['hash'] ?><?= isset($this->v['path']) ? '/' . $this->v['path'] : '' ?>"><?= substr($commit['hash'],
+                        0,
                         8) ?></a></td>
             <td><?= $commit['msg'] ?></td>
             <td><?= date('Y/m/d H:i', $commit['time']) ?></td>

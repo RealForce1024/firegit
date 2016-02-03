@@ -29,7 +29,7 @@ class Manager
         );
         file_put_contents(LOG_ROOT . 'task', $cmd);
         exec($cmd, $outputs, $code);
-        return $code;
+        return $code    ;
     }
 
     /**
@@ -123,6 +123,21 @@ HOOK;
         }
         chdir($gitDir);
         $cmd = sprintf('su git -c "git branch -d %s"', $branch);
+        file_put_contents(LOG_ROOT . 'cmd', $cmd);
+        exec($cmd, $outputs, $code);
+        return $code;
+    }
+
+    /**
+     * 打标签
+     */
+    public function addTag($group, $name, $orig, $tagname){
+        $gitDir = GIT_REPO . $group . '/' . $name . '.git';
+        if (!is_dir($gitDir)) {
+            return 1;
+        }
+        chdir($gitDir);
+        $cmd = sprintf('su git -c "git tag %s %s"', $tagname, $orig);
         file_put_contents(LOG_ROOT . 'cmd', $cmd);
         exec($cmd, $outputs, $code);
         return $code;

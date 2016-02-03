@@ -151,6 +151,20 @@ class Reposite
     }
 
     /**
+     * 获取标签
+     */
+    function listTags()
+    {
+        chdir($this->dir);
+        $cmd = sprintf('git tag -n');
+        exec($cmd, $lines, $code);
+        if(!empty($lines)){
+            //TODO
+        }
+        return $lines;
+    }
+
+    /**
      * 获取文件原始内容
      * @param $branch
      * @param $path
@@ -535,6 +549,11 @@ class Reposite
      */
     function getBlame($path)
     {
+        $log = $this->getHistory($path);
+        return $log['commits'];
+        foreach ($log['commits'] as $log_key => $log_val) {
+            return next($log_val);
+        }
 
         $cmd = sprintf('git blame ../%s', $path);
         exec($cmd, $lines, $code);
@@ -544,25 +563,27 @@ class Reposite
             return $lines;
         }
         return $lines;
-        print_r($lines);die;
+        print_r($lines);
+        die;
         $return_blame = array();
         $return_blames = array();
         for ($i = 0, $l = count($lines); $i < $l; $i++) {
-            $return_blame[$i] = explode(' ',$lines[$i],2);
+            $return_blame[$i] = explode(' ', $lines[$i], 2);
             $return_blames[$i]['hase'] = $return_blame[$i][0];//哈希值
-            $index = strpos($return_blame[$i][1],')')+1;
-            $name = rtrim(ltrim(mb_substr($return_blame[$i][1] , 0 ,$index),'('),')');
+            $index = strpos($return_blame[$i][1], ')') + 1;
+            $name = rtrim(ltrim(mb_substr($return_blame[$i][1], 0, $index), '('), ')');
             $return_blames[$i]['name_time'] = $name;
-            $content = mb_substr($return_blame[$i][1] , $index);
+            $content = mb_substr($return_blame[$i][1], $index);
             $return_blames[$i]['contents'] = $content ? $content : array();
 
         }
-        $arr=array();
-        foreach ($return_blames as $k=>$v){
-            $arr[] = $v['hase'].$v['name_time'].$v['contents'];
+        $arr = array();
+        foreach ($return_blames as $k => $v) {
+            $arr[] = $v['hase'] . $v['name_time'] . $v['contents'];
 
         }
-        print_r($arr);die;
+        print_r($arr);
+        die;
         return $return_blames;
     }
 
@@ -572,7 +593,7 @@ class Reposite
     function getHistory($path)
     {
         chdir($this->dir);
-        $cmd = sprintf('git log --oneline --format="%s" -- %s','%H %ct %an %s', $path);
+        $cmd = sprintf('git log --oneline --format="%s" -- %s', '%H %ct %an %s', $path);
         exec($cmd, $lines, $code);
         $commits = self::parseCommitsLines($lines);
         return array(

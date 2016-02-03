@@ -1,0 +1,72 @@
+<div class="pull-right" style="padding: 6px;">
+    <a id="addNewBranch" class="btn btn-primary" data-hook="dialog" data-hook-option="{
+        content:$('#dialog'),
+        title:'添加标签',
+        width: 400
+    }"><em class="glyphicon glyphicon-plus"></em>添加标签</a>
+</div>
+<div>
+    <?php if (!empty($this->v['tage'])) : ?>
+        <table>
+            <?php foreach ($this->v['tage'] as $tag_k => $tag_v) : ?>
+                <tr>
+                    <td><?= $tag_v ?></td>
+                </tr>
+            <?php endforeach; ?>
+        </table>
+    <?php endif ?>
+</div>
+
+<div id="dialog" style="display: none">
+    <form data-hook="ajaxable" data-hook-option="{okText:'添加成功'}" class="form-horizontal" method="post"
+          action="<?= $this->v['prefix'] ?>_add_tags">
+        <div class="form-group">
+            <label for="iptFrom" class="col-sm-4 control-label">来源分支</label>
+            <div class="col-sm-8">
+                <!--                <select class="form-control" name="orig" required>-->
+                <!--                    <option value="">选择来源分支</option>-->
+                <!--                    --><?php //foreach ($this->v['branchelist'] as $branch): ?>
+                <!--                        <option value="--><? //= $branch['name'] ?><!--">-->
+                <? //= $branch['name'] ?><!--</option>-->
+                <!--                    --><?php //endforeach ?>
+                <!--                </select>-->
+                <input type="text" required min="6" maxlength="30" class="form-control" id="suggestable"
+                       placeholder="分支名或者哈希值" name="orig">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="iptFrom" class="col-sm-4 control-label">标签名</label>
+            <div class="col-sm-8">
+                <input type="text" required min="6" maxlength="30" class="form-control" id="iptFrom" placeholder="标签名"
+                       name="tagname"/>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-sm-9 col-sm-offset-3">
+                <input type="submit" value="添加" class="btn btn-lg btn-primary"/>
+            </div>
+
+        </div>
+    </form>
+</div>
+<?php
+$orig = '';
+if(isset($this->v['branchelist']) && !empty($this->v['branchelist'])){
+    foreach ($this->v['branchelist'] as $br_key => $br_val) {
+        $orig .= "'" . $br_val['name'] . "',";
+    }
+    $orig = rtrim($orig, ',');
+}
+?>
+<script>
+    $('#suggestable').suggestable({
+        items: [<?php echo $orig?>],
+        onSelect: function (text) {
+            this.value = text;
+        },
+        autoSearch: true,
+        searchPrefix: ''
+    });
+</script>

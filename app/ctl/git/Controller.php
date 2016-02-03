@@ -239,13 +239,37 @@ class Controller extends \firegit\http\Controller
      */
     function _del_branch_action()
     {
+        $branch = implode('/', func_get_args());
         \firegit\git\Manager::doTask(
             'delBranch',
             $this->gitGroup,
             $this->gitName,
             array(
-                'branch' => $this->gitBranch,
+                'branch' => $branch,
             )
+        );
+    }
+
+
+    function tags_action()
+    {
+        $branches = $this->repo->listBranches();//分支列表
+        $tags = $this->repo->listTags();//标签列表
+        $this->setBranch();
+        $this->response->set(array(
+            'navType' => 'tags',
+            'tage' => $tags,
+            'branchelist' => $branches,
+        ))->setView('git/tags.phtml');
+    }
+    function _add_tags_action()
+    {
+        $datas = $this->posts('orig', 'remark', 'tagname');
+        $cd = \firegit\git\Manager::doTask(
+            'addTag',
+            $this->gitGroup,
+            $this->gitName,
+            $datas
         );
     }
 
@@ -375,6 +399,7 @@ class Controller extends \firegit\http\Controller
     {
         list($branch, $path) = $this->handleBranchAndPath(func_get_args());
         $blame = $this->repo->getBlame($path);
+        print_r($blame);die;
         $this->response
             ->set(array(
                 'blame' => $blame,
@@ -395,6 +420,8 @@ class Controller extends \firegit\http\Controller
             ->set(array(
                 'show_menu' => 'show',
                 'model' => 'history',
+                'path' => $path,
+                'blob' => 'blob',//判断链接的标识
                 'commits' => $this->packCommits($history['commits']),
             ))
             ->setView('git/commits.phtml');
