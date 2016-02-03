@@ -15,3 +15,5 @@ define('GIT_USER', 'git');
 define('GIT_GROUP', 'git');
 define('GIT_BRANCH_RULE', '#^[a-z][a-z0-9\_\-]{5,30}$#');
 define('GIT_ZERO_HASH', str_repeat('0', 40));
+
+define('HELPER_NS_PREFIX', '\\firegit\\app\\helper\\');

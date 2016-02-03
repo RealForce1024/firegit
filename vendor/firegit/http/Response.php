@@ -91,7 +91,6 @@ class Response
     {
         if ($this->ex) {
             $this->outputs = array(
-                'status' => $this->status,
                 'msg' => $this->ex->getMessage(),
                 'file' => str_replace(SITE_ROOT, '', $this->ex->getFile()),
                 'line' => $this->ex->getLine(),

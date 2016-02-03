@@ -76,4 +76,23 @@ class View
     {
         return $this->fetch($this->tpl);
     }
+
+    private $helpers = array();
+
+    /**
+     * 动态调用helper
+     * @param $name
+     * @param $arguments
+     * @return mixed
+     */
+    function __call($name, $arguments)
+    {
+        if (isset($this->helpers[$name])) {
+            $helper = $this->helpers[$name];
+        } else {
+            $className = HELPER_NS_PREFIX . $name;
+            $this->helpers[$name] = $helper = new $className($this);
+        }
+        return call_user_func_array(array($helper, 'execute'), $arguments);
+    }
 }

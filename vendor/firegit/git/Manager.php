@@ -26,7 +26,7 @@ class Manager
             $task,
             $argStrs ? implode(' ', $argStrs) : ''
         );
-        file_put_contents(LOG_ROOT.'task', $cmd);
+        file_put_contents(LOG_ROOT . 'task', $cmd);
         exec($cmd, $outputs, $code);
         return $code;
     }
@@ -39,8 +39,8 @@ class Manager
     public function init($group, $name)
     {
         $gitDir = GIT_REPO . $group . '/' . $name . '.git';
-        if (!is_dir($gitDir)) {
-            mkdir($gitDir, 0755, true);
+        if (!is_dir(GIT_REPO . $group)) {
+            system(sprintf('mkdir -p %s && chown %s:%s %s -R', $gitDir, GIT_USER, GIT_GROUP, GIT_REPO . $group));
         }
         chdir($gitDir);
         system('git init --bare');
@@ -122,7 +122,7 @@ HOOK;
         }
         chdir($gitDir);
         $cmd = sprintf('su git -c "git branch -d %s"', $branch);
-        file_put_contents(LOG_ROOT.'cmd', $cmd);
+        file_put_contents(LOG_ROOT . 'cmd', $cmd);
         exec($cmd, $outputs, $code);
         return $code;
     }

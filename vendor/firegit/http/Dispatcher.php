@@ -52,7 +52,6 @@ class Dispatcher
         );
 
         require_once $ctlPath;
-        trigger_error('ctlpath:' . $ctlPath, E_USER_NOTICE);
         if (!class_exists($className)) {
             throw new \Exception('firegit.u_notfound cls=' . $className);
         }
@@ -122,7 +121,6 @@ class Dispatcher
                 break;
 
             case E_USER_NOTICE:
-                return true;
                 echo "<b>My NOTICE</b> [$errno] $errstr in {$errfile}[line {$errline}]<br />\n";
                 break;
 
