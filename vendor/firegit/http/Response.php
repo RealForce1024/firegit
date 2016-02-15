@@ -9,6 +9,7 @@ class Response
     protected $layout;
     private $raw;
     private $ex;
+    private $err;
 
 
     /**
@@ -22,6 +23,18 @@ class Response
         $arr = explode(' ', $msg);
         $this->status = $arr[0];
         $this->ex = $ex;
+        return $this;
+    }
+
+    /**
+     * 设置错误
+     * @param $err
+     * @return $this
+     */
+    function setError($err)
+    {
+        $this->status = 'firegit.fatal';
+        $this->err = $err;
         return $this;
     }
 
@@ -94,6 +107,12 @@ class Response
                 'msg' => $this->ex->getMessage(),
                 'file' => str_replace(SITE_ROOT, '', $this->ex->getFile()),
                 'line' => $this->ex->getLine(),
+            );
+        } else if ($this->err) {
+            $this->outputs = array(
+                'msg' => $this->err['msg'],
+                'file' => $this->err['file'],
+                'line' => $this->err['line'],
             );
         }
         $output = array(
