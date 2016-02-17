@@ -54,7 +54,9 @@ class Manager
 <?php
 include '{$phpPath}';
 
-if (!\\firegit\\git\\Hook::preReceive()) {
+\\firegit\\app\\hook\\Loader::init();
+\$hook = new \\firegit\\git\\Hook(dirname(__DIR__));
+if (!\$hook->preReceive()) {
     exit(1);
 }
 HOOK;
@@ -82,6 +84,26 @@ HOOK;
             );
         }
         return $ret;
+    }
+
+    /**
+     * 获取所有的群组
+     * @return array
+     */
+    public static function getGroups()
+    {
+        $fh = opendir(GIT_REPO);
+        $groups = array();
+        while( $file = readdir($fh) ) {
+            if ($file[0] == '.') {
+                continue;
+            }
+            if (is_dir(GIT_REPO.$file)) {
+                $groups[] = $file;
+            }
+        }
+        closedir($fh);
+        return $groups;
     }
 
     /**

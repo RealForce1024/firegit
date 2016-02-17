@@ -1,20 +1,37 @@
-<div class="pull-right" style="padding: 6px;">
-    <a id="addNewBranch" class="btn btn-primary" data-hook="dialog" data-hook-option="{
+<div>
+    <div class="pull-right" style="padding: 6px;">
+        <a id="addNewBranch" class="btn btn-primary" data-hook="dialog" data-hook-option="{
         content:$('#dialog'),
         title:'添加合并请求',
         width:400
     }"><em class="glyphicon glyphicon-plus"></em>添加合并请求</a>
+    </div>
 </div>
 <table class="clearfix table table-striped table-hover table-responsive">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>标题</th>
+        <th>来源分支</th>
+        <th>目标分支</th>
+        <th>合并状态</th>
+        <th>创建时间</th>
+    </tr>
+    </thead>
+    <tbody>
     <?php foreach ($this->v['merges'] as $merge): ?>
         <tr>
-            <td><?= $merge['merge_id'] ?></td>
-            <td><a href="<?=$this->v['prefix']?>merge/<?=$merge['merge_id']?>"><?=$merge['title']?></a></td>
+            <td>#<?= $merge['merge_id'] ?></td>
+            <td><a href="<?= $this->v['prefix'] ?>merge/<?= $merge['merge_id'] ?>"><?= $merge['title'] ?></a></td>
+            <td><a href="<?= $this->v['prefix'] . $merge['orig_branch'] ?>"><?= $merge['orig_branch'] ?></td>
+            <td><a href="<?= $this->v['prefix'] . $merge['dest_branch'] ?>"><?= $merge['dest_branch'] ?></td>
+            <td><?= $this->v['mergeStatus'][$merge['merge_status']] ?></td>
             <td>
-                <a href="<?=$this->v['prefix']?>merge/<?=$merge['merge_id']?>/edit">编辑</a>
+                <?= date('Y/m/d H:i:s', $merge['create_time']) ?>
             </td>
         </tr>
     <?php endforeach ?>
+    </tbody>
 </table>
 
 <div id="dialog" style="display: none">
@@ -57,14 +74,14 @@
     </form>
 </div>
 <script>
-$('#formMerge').on('submit', function() {
-    if (this.orig.value == this.dest.value) {
-        dialog({
-            align:'right',
-            content:'不能选择同一个分支',
-            quickClose: true
-        }).show(document.getElementById('destBranch'));
-        return false;
-    }
-});
+    $('#formMerge').on('submit', function () {
+        if (this.orig.value == this.dest.value) {
+            dialog({
+                align: 'right',
+                content: '不能选择同一个分支',
+                quickClose: true
+            }).show(document.getElementById('destBranch'));
+            return false;
+        }
+    });
 </script>

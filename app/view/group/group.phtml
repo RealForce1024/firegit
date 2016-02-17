@@ -1,0 +1,5 @@
+<ul>
+    <?php foreach($this->v['repos'] as $repo):?>
+        <li><a href="<?=$this->v['prefix']?><?=$repo['dir']?>"><?=$repo['name']?></a> </li>
+    <?php endforeach?>
+</ul>

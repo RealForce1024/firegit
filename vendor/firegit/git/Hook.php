@@ -1,22 +1,53 @@
 <?php
 namespace firegit\git;
 
-require_once dirname(__DIR__).'/util/ColorConsole.php';
-
 class Hook
 {
+    var $group;
+    var $name;
+    var $fromHttp;
+    var $authUser = false;
+
+    private static $hooks = array();
+    /**
+     * Hook constructor.
+     * @param $gitDir git项目的地址
+     */
+    function __construct($gitDir)
+    {
+        $this->name = basename($gitDir, '.git');
+        $this->group = basename(dirname($gitDir));
+
+        if (isset($_SERVER['REQUEST_METHOD'])) {
+            $this->fromHttp = true;
+        }
+        if ($this->fromHttp) {
+            list($_, $uname) = explode(' ', $_SERVER['HTTP_AUTHORIZATION']);
+            $this->authUser = $uname;
+        }
+    }
+
+    /**
+     * 增加hook
+     * @param $hookName
+     * @param callable $hook
+     * @throws \Exception
+     */
+    static function addHook($hookName, $hook)
+    {
+        if (!is_callable($hook)) {
+            throw new \Exception('hook.illegalHook');
+        }
+        self::$hooks[$hookName][] = $hook;
+    }
+
     /**
      * 从远程推送提交到服务器上时
      * @return bool
      */
-    static function preReceive()
+    function preReceive()
     {
-        $gitGroup = $_SERVER['FIREGIT_GROUP'];
-        $gitName = $_SERVER['FIREGIT_NAME'];
-
-        list($_, $auth) = explode(' ', $_SERVER['HTTP_AUTHORIZATION']);
-
-        $zeroCommit = str_repeat('0', 40);
+        $commits = array();
 
         while (!feof(STDIN)) {
             $line = trim(fgets(STDIN));
@@ -24,24 +55,22 @@ class Hook
                 continue;
             }
             list($oref, $nref, $branch) = explode(' ', $line);
+            $commits[] = array(
+                'start' => $oref,
+                'end' => $nref,
+                'branch' => $branch,
+            );
+        }
 
-            if (strpos($branch, Util::TAG_PREFIX) === 0) {
-              // TODO
-            } elseif ($branch != Util::normalBranch('master')) {
-                // 检查分支是否存在
-                system('git show-branch ' . $branch . ' > /dev/null 2>&1', $code);
-                if ($code !== 0) {
-                    \firegit\util\ColorConsole::error($branch . ' must create from server');
+        if (isset(self::$hooks['preReceive'])) {
+            foreach(self::$hooks['preReceive'] as $hook) {
+                $ret = call_user_func_array($hook, array($this, $commits));
+                if ($ret === false) {
                     return false;
                 }
             }
-
-            if ($oref == $zeroCommit) {
-                system('git ls-tree -r ' . $nref);
-            } else {
-                system(sprintf('git diff-tree  %s..%s --stat', $oref, $nref));
-            }
         }
+return true;
         return true;
     }
 }

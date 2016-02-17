@@ -8,13 +8,7 @@ class Controller extends \firegit\http\Controller
 {
     function index_action()
     {
-        $group = 'ronnie';
-        $repos = Manager::getReposByGroup($group);
-        $this->response
-            ->set(array(
-                'group' => $group,
-                'repos' =>$repos,
-            ))
+        $this->setLayout('layout/common.phtml')
             ->setView('index/index.phtml');
     }
 }

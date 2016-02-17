@@ -1,6 +1,8 @@
 <?php
 namespace firegit\git;
 
+define('ZERO_COMMIT', str_repeat('0', 40));
+
 class Reposite
 {
     var $group;
@@ -21,6 +23,38 @@ class Reposite
         if (!is_dir($this->dir)) {
             throw new \Exception('reposite.dirNotFound dir=' . $this->dir);
         }
+    }
+
+    /**
+     * 创建服务器端分支
+     * @param $orig
+     * @param $dest
+     * @return int 返回状态值
+     *  * 0 成功
+     *  * 1 git仓库不存在
+     *  * 2 $orig分支不存在
+     *  * 3 $dest分支已经存在
+     */
+    function newBranch($orig, $dest)
+    {
+        chdir($this->dir);
+        $cmd = sprintf('git branch %s %s', $dest, Util::normalBranch($orig));
+        exec($cmd, $lines, $code);
+        return $code;
+    }
+
+
+    /**
+     * 删除分支
+     * @param $branch
+     * @return int
+     */
+    public function delBranch($branch)
+    {
+        chdir($this->dir);
+        $cmd = sprintf('git branch -D %s', $branch);
+        exec($cmd, $lines, $code);
+        return $code;
     }
 
     /**
@@ -100,8 +134,8 @@ class Reposite
         foreach ($lines as $line) {
             $arr = explode(' ', $line, 4);
             $commits[] = array(
-                'time' => $arr[0],
-                'hash' => $arr[1],
+                'time' => $arr[1],
+                'hash' => $arr[0],
                 'author' => $arr[2],
                 'msg' => isset($arr[3]) ? $arr[3] : '',
             );
@@ -158,7 +192,7 @@ class Reposite
         chdir($this->dir);
         $cmd = sprintf('git tag -n');
         exec($cmd, $lines, $code);
-        if(!empty($lines)){
+        if (!empty($lines)) {
             //TODO
         }
         return $lines;
@@ -273,6 +307,49 @@ class Reposite
     }
 
     /**
+     * 检查分支是否存在
+     * @param $branch
+     * @return bool
+     */
+    function isBranchExists($branch)
+    {
+        chdir($this->dir);
+        system('git show-branch ' . $branch . ' > /dev/null 2>&1', $code);
+        return $code === 0;
+    }
+
+
+    /**
+     * 获取合并的提交
+     * @param $fromHash
+     * @param $endHash
+     * @return array
+     */
+    function listMergeCommits($fromHash, $endHash)
+    {
+        chdir($this->dir);
+        $cmd = sprintf('git log --merges --pretty=raw -1 %s%s', $fromHash == ZERO_COMMIT ? '' : $fromHash . '..',
+            $endHash);
+        exec($cmd, $lines, $code);
+        $ret = array();
+        while (true) {
+            $line = array_shift($lines);
+            if ($line === null) {
+                break;
+            }
+            if (substr($line, 0, 7) == 'commit ') {
+                $commit = array();
+                $commit['hash'] = substr($line, 7);
+                $commit['tree'] = substr(array_shift($lines), strlen('tree '));
+                $commit['dest'] = substr(array_shift($lines), strlen('parent '));
+                $commit['orig'] = substr(array_shift($lines), strlen('parent '));
+                $ret[] = $commit;
+            }
+        }
+        return $ret;
+    }
+
+    /**
      * 获取一个提交的统计信息
      * @param $hash
      * @return array
@@ -365,6 +442,7 @@ class Reposite
         $blocks = null;
         $fromLine = 0;
         $toLine = 0;
+        $incrLine = true;
         for ($i = 0, $l = count($lines); $i < $l; $i++) {
             $line = $lines[$i];
             if (strpos($line, 'diff --git ') === 0) {
@@ -420,18 +498,29 @@ class Reposite
                         'to' => $toLine,
                         'line' => $line,
                     );
+                    if (substr($line, -3) == ' @@') {
+                        $incrLine = false;
+                    }
                 } else {
                     if ($line) {
                         switch ($line[0]) {
                             case '-': // 表示是起始commit的文件
-                                $fromLine++;
+                                if (!$incrLine) {
+                                    $incrLine = true;
+                                } else {
+                                    $fromLine++;
+                                }
                                 $blocks[] = array(
                                     'from' => $fromLine,
                                     'line' => $line
                                 );
                                 break;
                             case '+':
-                                $toLine++;
+                                if (!$incrLine) {
+                                    $incrLine = true;
+                                } else {
+                                    $toLine++;
+                                }
                                 $blocks[] = array(
                                     'to' => $toLine,
                                     'line' => $line,
@@ -443,8 +532,13 @@ class Reposite
                                 );
                                 break;
                             default:
-                                $fromLine++;
-                                $toLine++;
+                                if (!$incrLine) {
+                                    $incrLine = true;
+                                } else {
+                                    $fromLine++;
+                                    $toLine++;
+                                }
+
                                 $blocks[] = array(
                                     'from' => $fromLine,
                                     'to' => $toLine,
@@ -452,8 +546,12 @@ class Reposite
                                 );
                         }
                     } else {
-                        $fromLine++;
-                        $toLine++;
+                        if (!$incrLine) {
+                            $incrLine = true;
+                        } else {
+                            $fromLine++;
+                            $toLine++;
+                        }
                         $blocks[] = array(
                             'from' => $fromLine,
                             'to' => $toLine,
@@ -542,164 +640,24 @@ class Reposite
         return $ret;
     }
 
-
     /**
-     * 文件追责->获取变化
-     * @param $commitFrom
-     * @return array
+     * 获取分支对应的hash值
+     * @param $branch
+     * @return bool|string
      */
-    function listDiffsBlame($info, $path, $commitFrom, $commitEnd = null)
+    function getBranchHash($branch)
     {
-
-        if ($commitEnd === null) {
-            $commitEnd = $commitFrom;
-            $commitFrom = $commitFrom . '^';
-        }
         chdir($this->dir);
-        $cmd = sprintf('git diff %s..%s ', $commitFrom, $commitEnd);
-        exec($cmd, $lines, $code);
-        $diffs = array();
-        $diff = null;
-        $blocks = null;
-        $fromLine = 0;
-        $toLine = 0;
-        for ($i = 0, $l = count($lines); $i < $l; $i++) {
-            $line = $lines[$i];
-            if (strpos($line, 'diff --git ') === 0) {
-                if ($diff) {
-                    if ($blocks) {
-                        $diff['blocks'][] = $blocks;
-                        $blocks = array();
-                    }
-                    $diffs[] = $diff;
-                }
-
-                $diff = array(
-                    'from' => array(),
-                    'to' => array(),
-                    'blocks' => array(),
-                );
-                $arr = explode(' ', $line);
-                $diff['from']['path'] = substr($arr[2], 1);
-                $diff['to']['path'] = substr($arr[3], 1);
-
-                // 查找下一行
-                $i++;
-                $line = $lines[$i];
-                if (strncmp($line, 'index', 5) !== 0) {
-                    $i++;
-                    $line = $lines[$i];
-                }
-                $arr = preg_split('#(\s|\.\.)#', $line);
-                $diff['from']['hash'] = $arr[1];
-                $diff['to']['hash'] = $arr[2];
-
-                // 跨越两行
-                $i++;
-                $line = $lines[$i];
-                if (strncmp($line, 'Binary', 6) === 0) {
-                    $diff['type'] = 'bin';
-                } else {
-                    $diff['type'] = 'file';
-                    $i++;
-                }
-            } else {
-                if (strpos($line, '@@ -') === 0) {
-                    if ($blocks) {
-                        $diff['blocks'][] = $blocks;
-                    }
-                    $blocks = array();
-
-                    $arr = explode(' ', $line, 5);
-                    list($fromLine) = explode(',', substr($arr[1], 1));
-                    list($toLine) = explode(',', substr($arr[2], 1));
-                    $blocks[] = array(
-                        'from' => $fromLine,
-                        'to' => $toLine,
-                        'line' => $line,
-                        'hash' => $commitFrom,
-                        'author' => $info['author'],
-                        'time' => $info['time'],
-                        'msg' => $info['msg']
-                    );
-                } else {
-                    if ($line) {
-                        switch ($line[0]) {
-                            case '-': // 表示是起始commit的文件
-                                $fromLine++;
-                                $blocks[] = array(
-                                    'from' => $fromLine,
-                                    'line' => $line,
-                                    'hash' => $commitFrom,
-                                    'author' => $info['author'],
-                                    'time' => $info['time'],
-                                    'msg' => $info['msg']
-                                );
-                                break;
-                            case '+':
-                                $toLine++;
-                                $blocks[] = array(
-                                    'to' => $toLine,
-                                    'line' => $line,
-                                    'hash' => $commitFrom,
-                                    'author' => $info['author'],
-                                    'time' => $info['time'],
-                                    'msg' => $info['msg']
-                                );
-                                break;
-                            case '\\':
-                                $blocks[] = array(
-                                    'line' => $line,
-                                    'hash' => $commitFrom,
-                                    'author' => $info['author'],
-                                    'time' => $info['time'],
-                                    'msg' => $info['msg']
-                                );
-                                break;
-                            default:
-                                $fromLine++;
-                                $toLine++;
-                                $blocks[] = array(
-                                    'from' => $fromLine,
-                                    'to' => $toLine,
-                                    'line' => $line,
-                                    'hash' => $commitFrom,
-                                    'author' => $info['author'],
-                                    'time' => $info['time'],
-                                    'msg' => $info['msg']
-                                );
-                        }
-                    } else {
-                        $fromLine++;
-                        $toLine++;
-                        $blocks[] = array(
-                            'from' => $fromLine,
-                            'to' => $toLine,
-                            'line' => $line,
-                            'hash' => $commitFrom,
-                            'author' => $info['author'],
-                            'time' => $info['time'],
-                            'msg' => $info['msg']
-                        );
-                    }
-                }
-            }
+        $hash = exec('git show-ref -s ' . Util::normalBranch($branch), $lines, $code);
+        if ($lines) {
+            return $lines[0];
         }
-        if (!empty($blocks)) {
-            $diff['blocks'][] = $blocks;
-        }
-        if (!empty($diff)) {
-            $diffs[] = $diff;
-        }
-        foreach($diffs as $diff_key=>$diff_val){
-            if($diff_val['from']['path'] == '/'.$path){
-                return $diff_val;
-            };
-        }
+        return false;
     }
 
     /**
      * 文件追责
+     * @param $branch
      * @param $path
      * @return string
      */
