@@ -1,3 +1,21 @@
+<style>
+    .suggestion ul, .suggestion li {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    .suggestion li {
+        background: #DDD;
+        padding-left:10px;
+    }
+    .suggestion li.on {
+        background: #CCC;
+    }
+    .suggestion {
+        left:15px !important;
+    }
+</style>
+
 <div class="pull-right" style="padding: 6px;">
     <a id="addNewBranch" class="btn btn-primary" data-hook="dialog" data-hook-option="{
         content:$('#dialog'),
