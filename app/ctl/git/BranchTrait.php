@@ -29,15 +29,12 @@ trait BranchTrait
             throw new \Exception('firegit.illegalBranch');
         }
 
-        \firegit\git\Manager::doTask(
-            'newBranch',
-            $this->gitGroup,
-            $this->gitName,
-            array(
-                'orig' => $orig,
-                'dest' => $dest
-            )
-        );
+        $reposite = new \firegit\git\Reposite($this->gitGroup, $this->gitName);
+        $ret = $reposite->newBranch($orig, $dest);
+        if ($ret > 0) {
+            throw new \Exception('branch.u_createFailed code:' . $ret);
+        }
+
     }
 
     /**
@@ -45,13 +42,11 @@ trait BranchTrait
      */
     function _del_branch_action()
     {
-        \firegit\git\Manager::doTask(
-            'delBranch',
-            $this->gitGroup,
-            $this->gitName,
-            array(
-                'branch' => $this->gitBranch,
-            )
-        );
+        $branch = implode('/', func_get_args());
+        $reposite = new \firegit\git\Reposite($this->gitGroup, $this->gitName);
+        $ret = $reposite->delBranch($branch);
+        if ($ret > 0) {
+            throw new \Exception('branch.u_delBranchFailed code:' . $ret);
+        }
     }
 }

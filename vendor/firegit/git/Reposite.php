@@ -24,6 +24,38 @@ class Reposite
     }
 
     /**
+     * 创建服务器端分支
+     * @param $orig
+     * @param $dest
+     * @return int 返回状态值
+     *  * 0 成功
+     *  * 1 git仓库不存在
+     *  * 2 $orig分支不存在
+     *  * 3 $dest分支已经存在
+     */
+    function newBranch($orig, $dest)
+    {
+        chdir($this->dir);
+        $cmd = sprintf('git branch %s %s', $dest, Util::normalBranch($orig));
+        exec($cmd, $outputs, $code);
+        return $code;
+    }
+
+
+    /**
+     * 删除分支
+     * @param $branch
+     * @return int
+     */
+    public function delBranch($branch)
+    {
+        chdir($this->dir);
+        $cmd = sprintf('git branch -d %s', $branch);
+        exec($cmd, $outputs, $code);
+        return $code;
+    }
+
+    /**
      * 显示分支的文件目录
      * @param $branch
      * @param $dir
