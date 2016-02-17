@@ -399,7 +399,6 @@ class Controller extends \firegit\http\Controller
     {
         list($branch, $path) = $this->handleBranchAndPath(func_get_args());
         $blame = $this->repo->getBlame($path);
-        print_r($blame);die;
         $this->response
             ->set(array(
                 'blame' => $blame))

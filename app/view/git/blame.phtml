@@ -5,19 +5,14 @@
 
                 <div class="panel-body">
                         <table class="diffs">
-                            <?php foreach ($this->v['blame']['blocks'] as $blocks): ?>
-                                <?php foreach ($blocks as $key => $block): ?>
-                                    <?php if ($key == 0): ?>
-
-                                    <?php else:?>
+                            <?php foreach ($this->v['blame'] as $block): ?>
                                         <tr class="block">
-                                            <td ><?= date('Y-m-d H:i:s', $block['time']) ?></td>
+<!--                                            <td >--><?//= $block['msg'] ?><!--</td>-->
                                             <td ><?= $block['author'] ?></td>
+                                            <td class="line-to"><?= $block['line'] ?></td>
                                             <td class="code"><?= str_replace(' ', '&nbsp;',
-                                                    htmlentities($block['line'])) ?></td>
+                                                    htmlentities($block['code'])) ?></td>
                                         </tr>
-                                    <?php endif ?>
-                                <?php endforeach ?>
                             <?php endforeach ?>
                         </table>
                 </div>

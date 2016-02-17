@@ -100,8 +100,8 @@ class Reposite
         foreach ($lines as $line) {
             $arr = explode(' ', $line, 4);
             $commits[] = array(
-                'hash' => $arr[0],
-                'time' => $arr[1],
+                'time' => $arr[0],
+                'hash' => $arr[1],
                 'author' => $arr[2],
                 'msg' => isset($arr[3]) ? $arr[3] : '',
             );
@@ -348,16 +348,17 @@ class Reposite
      * 获取变化
      * @param $commitFrom
      * @param null $commitEnd 如果此参数不提供，则认为获取$commitFrom和上一个提交的变化
+     * @param string $path
      * @return array
      */
-    function listDiffs($commitFrom, $commitEnd = null)
+    function listDiffs($commitFrom, $commitEnd = null, $path = null)
     {
         if ($commitEnd === null) {
             $commitEnd = $commitFrom;
             $commitFrom = $commitFrom . '^';
         }
         chdir($this->dir);
-        $cmd = sprintf('git diff %s..%s ', $commitFrom, $commitEnd);
+        $cmd = sprintf('git diff %s..%s %s', $commitFrom, $commitEnd, $path !== null ? ' -- ./'.$path : '');
         exec($cmd, $lines, $code);
         $diffs = array();
         $diff = null;
@@ -549,6 +550,7 @@ class Reposite
      */
     function listDiffsBlame($info, $path, $commitFrom, $commitEnd = null)
     {
+
         if ($commitEnd === null) {
             $commitEnd = $commitFrom;
             $commitFrom = $commitFrom . '^';
@@ -691,9 +693,6 @@ class Reposite
         }
         foreach($diffs as $diff_key=>$diff_val){
             if($diff_val['from']['path'] == '/'.$path){
-                foreach($diff_val['blocks'] as $bl_key=>$bl_val){
-                    
-                }
                 return $diff_val;
             };
         }
@@ -706,18 +705,43 @@ class Reposite
      */
     function getBlame($path)
     {
+        chdir($this->dir);
+
+        $arr = null;
         $log = $this->getHistory($path);
-        $flag = 0;
-        foreach ( $log['commits'] as $log_key=>$log_val) {
-            $flag++;
-            if(isset($log['commits'][$flag])){
+        $log = $log['commits'];
+
+        $firstHash = $log[0]['hash'];
+        exec(sprintf('git ls-tree %s %s', $firstHash, './'.$path), $outputs);
+
+        exec('git show c1d496b32886180f66a2c14968bec55340e5344c', $content);
+
+//        asort($log);
+        foreach ( $log as $log_key=>$log_val) {
+            $diff = $this->listDiffs($log_val['hash'], null, $path);
+            foreach($diff['blocks'] as $arr_key=>$arr_val){
+                foreach($arr_val as $val_key=>$val_val){
+                    if (strpos($val_val['line'], '+') === 0) {
+                        --$val_val['to'];
+                        $arr[$val_val['to']]['code'] = ltrim($val_val['line'], '+');
+                        $arr[$val_val['to']]['hash'] = $val_val['hash'];
+                        $arr[$val_val['to']]['author'] = $val_val['author'];
+                        $arr[$val_val['to']]['msg'] = $val_val['msg'];
+                        $arr[$val_val['to']]['line'] = $val_val['to'];
+//                    }elseif(strpos($val_val['line'], '-') === 0){
+//                        print_r($diff['blocks']);die;
+//                        return $val_val;
+//                        --$val_val['from'];
+//                        unset($arr[$val_val['from']]);
+//                        //return $val_val;
+                    }
+                }
 
             }
-            $diff = $this->listDiffsBlame($log_val, $path, $log_val['hash']);
-            return $diff;
-        }
 
-        return $diff;
+        }
+        ksort($arr);
+        return $arr;
     }
 
     /**
@@ -726,7 +750,7 @@ class Reposite
     function getHistory($path)
     {
         chdir($this->dir);
-        $cmd = sprintf('git log --oneline --format="%s" -- %s', '%H %ct %an %s %ce', $path);
+        $cmd = sprintf('git log --oneline --format="%s" -- %s', '%ct %H %an %s %ce', $path);
         exec($cmd, $lines, $code);
         $commits = self::parseCommitsLines($lines);
         return array(
