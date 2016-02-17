@@ -21,9 +21,12 @@ class Loader
 
         // 检查每个分支是否已经创建过
         $merges = array();
+        $branches = array();
         foreach($commits as $commit) {
             $branch = $commit['branch'];
             if (strpos($branch, Util::TAG_PREFIX) !== 0) {
+                // TODO：是否为强制更新
+
                 // 如果不是主分支，且服务器端未创建，则不允许提交
                 if ($branch != Util::normalBranch('master')) {
                     if (!$reposite->isBranchExists($branch)) {
@@ -31,14 +34,23 @@ class Loader
                         return false;
                     }
                 }
+
                 $_ms = $reposite->listMergeCommits($commit['start'], $commit['end']);
                 if ($_ms) {
                     $merges = array_merge($merges, $_ms);
                 }
+
+                $branches[substr($branch, strlen(Util::BRANCH_PREFIX))] = $commit['end'];
             }
         }
 
         $merge = new \firegit\app\mod\git\Merge();
-        $merge->handleMerges($hook->group, $hook->name, $merges);
+        if ($merges) {
+            $merge->handleMerges($hook->group, $hook->name, $merges);
+        }
+
+        if ($branches) {
+            $merge->updateBranches($hook->group, $hook->name, $branches);
+        }
     }
 }

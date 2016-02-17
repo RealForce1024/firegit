@@ -39,7 +39,7 @@ class Reposite
     {
         chdir($this->dir);
         $cmd = sprintf('git branch %s %s', $dest, Util::normalBranch($orig));
-        exec($cmd, $outputs, $code);
+        exec($cmd, $lines, $code);
         return $code;
     }
 
@@ -53,7 +53,7 @@ class Reposite
     {
         chdir($this->dir);
         $cmd = sprintf('git branch -d %s', $branch);
-        exec($cmd, $outputs, $code);
+        exec($cmd, $lines, $code);
         return $code;
     }
 
@@ -328,10 +328,11 @@ class Reposite
     function listMergeCommits($fromHash, $endHash)
     {
         chdir($this->dir);
-        $cmd = sprintf('git log --merges --pretty=raw -1 %s%s', $fromHash == ZERO_COMMIT ? '' : $fromHash.'..', $endHash);
+        $cmd = sprintf('git log --merges --pretty=raw -1 %s%s', $fromHash == ZERO_COMMIT ? '' : $fromHash . '..',
+            $endHash);
         exec($cmd, $lines, $code);
         $ret = array();
-        while(true) {
+        while (true) {
             $line = array_shift($lines);
             if ($line === null) {
                 break;
@@ -433,7 +434,7 @@ class Reposite
             $commitFrom = $commitFrom . '^';
         }
         chdir($this->dir);
-        $cmd = sprintf('git diff %s..%s ', $commitFrom, $commitEnd);
+        $cmd = sprintf('git diff %s..%s ', $commitEnd, $commitFrom);
         exec($cmd, $lines, $code);
         $diffs = array();
         $diff = null;
@@ -625,9 +626,9 @@ class Reposite
     function getBranchHash($branch)
     {
         chdir($this->dir);
-        $hash = system('git show-ref -s '.Util::normalBranch($branch));
-        if ($hash) {
-            return $hash;
+        $hash = exec('git show-ref -s ' . Util::normalBranch($branch), $lines, $code);
+        if ($lines) {
+            return $lines[0];
         }
         return false;
     }

@@ -18,6 +18,7 @@
         <th>标题</th>
         <th>来源分支</th>
         <th>目标分支</th>
+        <th>合并状态</th>
         <th>创建时间</th>
     </tr>
     </thead>
@@ -28,6 +29,7 @@
             <td><a href="<?= $this->v['prefix'] ?>merge/<?= $merge['merge_id'] ?>"><?= $merge['title'] ?></a></td>
             <td><a href="<?= $this->v['prefix'] . $merge['orig_branch'] ?>"><?= $merge['orig_branch'] ?></td>
             <td><a href="<?= $this->v['prefix'] . $merge['dest_branch'] ?>"><?= $merge['dest_branch'] ?></td>
+            <td><?= $this->v['mergeStatus'][$merge['merge_status']] ?></td>
             <td>
                 <?= date('Y/m/d H:i:s', $merge['create_time']) ?>
             </td>

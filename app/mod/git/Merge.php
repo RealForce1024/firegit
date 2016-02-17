@@ -65,6 +65,45 @@ class Merge
     }
 
     /**
+     * 更新合并里边的分支的hash值
+     * @param $repoGroup
+     * @param $repoName
+     * @param $branches
+     * <code>array(
+     *   $branch => $hash
+     * )</code>
+     */
+    function updateBranches($repoGroup, $repoName, $branches)
+    {
+        $db = Db::get('firegit');
+        foreach ($branches as $branch => $hash) {
+            $db->table('fg_merge')
+                ->in('merge_status', array(MERGE_STATUS_UNMERGED, MERGE_STATUS_MERGING, MERGE_STATUS_FAILED))
+                ->where(array(
+                    'repo_group' => $repoGroup,
+                    'repo_name' => $repoName,
+                    'orig_branch' => $branch,
+                ))
+                ->saveBody(array(
+                    'orig_hash' => $hash,
+                ))
+                ->update();
+
+            $db->table('fg_merge')
+                ->in('merge_status', array(MERGE_STATUS_UNMERGED, MERGE_STATUS_MERGING, MERGE_STATUS_FAILED))
+                ->where(array(
+                    'repo_group' => $repoGroup,
+                    'repo_name' => $repoName,
+                    'dest_branch' => $branch,
+                ))
+                ->saveBody(array(
+                    'orig_hash' => $hash,
+                ))
+                ->update();
+        }
+    }
+
+    /**
      * 将指定的合并对应的合并请求标志为合并成功
      * @param $repoGroup
      * @param $repoName
@@ -86,7 +125,7 @@ class Merge
             ->order('merge_id', false)
             ->get();
         foreach ($merges as $key => $merge) {
-            foreach($rows as $key => $row) {
+            foreach ($rows as $key => $row) {
                 if ($merge['orig'] == $row['orig_hash'] && $merge['dest'] == $row['dest_hash']) {
                     $this->endMerge($row['merge_id'], MERGE_STATUS_MERGED);
                     unset($rows[$key]);

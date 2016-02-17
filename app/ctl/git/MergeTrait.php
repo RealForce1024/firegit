@@ -3,6 +3,13 @@ namespace firegit\app\ctl\git;
 
 trait MergeTrait
 {
+    private $mergeStatus = array(
+        1 => '未处理',
+        2 => '正在合并',
+        4 => '合并成功',
+        8 => '合并失败',
+        16 => '已取消',
+    );
     function merge_action($mergeId)
     {
         $this->setBranch();
@@ -46,6 +53,7 @@ trait MergeTrait
             'navType' => 'merge',
             'branches' => $branches,
             'notShowNav' => true,
+            'mergeStatus' => $this->mergeStatus,
         ))->setView('git/merges.phtml');
     }
 
