@@ -8,11 +8,12 @@ define('LOG_ROOT', SITE_ROOT.'/log/');
 define('BIN_ROOT', SITE_ROOT.'/bin/');
 define('VENDOR_ROOT', SITE_ROOT.'/vendor/');
 define('CONF_ROOT', SITE_ROOT.'/conf/');
+define('TMP_ROOT', SITE_ROOT.'/tmp/');
 
 
-define('GIT_REPO', '/home/git/repos/');
-define('GIT_USER', 'git');
-define('GIT_GROUP', 'git');
+define('GIT_REPO', SITE_ROOT.'/repos/');
+define('GIT_USER', 'work');
+define('GIT_GROUP', 'work');
 define('GIT_BRANCH_RULE', '#^[a-z][a-z0-9\_\-]{5,30}$#');
 define('GIT_ZERO_HASH', str_repeat('0', 40));
 
