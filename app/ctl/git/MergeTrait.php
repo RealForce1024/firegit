@@ -64,7 +64,8 @@ trait MergeTrait
         $orig = $_GET['orig'];
         $dest = $_GET['dest'];
 
-        $commits = $this->repo->listCommits(\firegit\git\Util::normalBranch($orig), \firegit\git\Util::normalBranch($dest));
+        // 找出从目标分支和原始分支相差哪些commit
+        $commits = $this->repo->listCommits(\firegit\git\Util::normalBranch($dest), \firegit\git\Util::normalBranch($orig));
 
         $nCommits = array();
         foreach ($commits as $commit) {
