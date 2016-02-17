@@ -80,6 +80,16 @@ trait MergeTrait
         ))->setView('git/add_merge.phtml');
     }
 
+    function dcommit_action()
+    {
+        $orig = $this->get('orig');
+        $dest = $this->get('dest');
+        $commits = $this->repo->listCommits(\firegit\git\Util::normalBranch($dest), \firegit\git\Util::normalBranch($orig));
+        $this->response->set(array(
+            'commits' => $this->packCommits($commits),
+        ))->setView('git/components/commits.phtml');
+    }
+
     function _add_merge_action()
     {
         $datas = $this->posts('orig', 'dest', 'title', 'desc');

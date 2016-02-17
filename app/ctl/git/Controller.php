@@ -210,16 +210,6 @@ class Controller extends \firegit\http\Controller
         ))->setView('git/components/diffs.phtml');
     }
 
-    function dcommit_action()
-    {
-        $orig = $this->get('orig');
-        $dest = $this->get('dest');
-        $commits = $this->repo->listCommits($orig, $dest);
-        $this->response->set(array(
-            'commits' => $this->packCommits($commits),
-        ))->setView('git/components/commits.phtml');
-    }
-
     private function packCommits($commits)
     {
         $nCommits = array();
