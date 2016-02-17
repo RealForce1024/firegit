@@ -22,7 +22,14 @@ class Bootstrap
     {
         $uri = $_SERVER['REQUEST_URI'];
         $_SERVER['REQUEST_RAWURI'] = $uri;
-        if (preg_match('#^\/([a-zA-Z][a-zA-Z0-9\-\_]{2,19})\/([a-zA-Z][a-zA-Z0-9\-\_]+)(\.git)?(\/.*)?$#', $uri, $ms)) {
+        if (preg_match('#^\/([a-zA-Z][a-zA-Z0-9\-\_]{2,19})(?:\/([a-zA-Z][a-zA-Z0-9\-\_]+)(\.git)?(\/.*)?)?$#', $uri, $ms)) {
+            if (!isset($ms[2])) {
+                $dir = GIT_REPO.$ms[1];
+                if (is_dir($dir)) {
+                    $_SERVER['REQUEST_URI'] = '/group/'.$ms[1];
+                    return;
+                }
+            }
             $dir = GIT_REPO . $ms[1] . '/' . $ms[2] . '.git';
 
             if (is_dir($dir)) {

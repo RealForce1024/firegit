@@ -17,30 +17,92 @@
     <script src="/static/hapj/js/hapj.min.js"></script>
     <script src="/static/hapj/js/suggestable.js"></script>
 
+    <style>
+        .navbar{border-radius:0;}
+        .navbar-inverse{
+            background-color: #4e4f74;}
+        .navbar-inverse .navbar-nav>.active>a{
+            background-color: #676899;}
+        .navbar-inverse .navbar-nav>li>a {
+            color: #f6f6f6;
+        }
+        .navbar-inverse .navbar-brand {
+            color: #f7f7f7;
+        }
+    </style>
 </head>
 <body>
 <?php
-$branch = $this->v['git']['branch'];
+$mainNav = isset($this->v['mainNav']) ? $this->v['mainNav'] : 'home';
+$branch = '';
+if (isset($this->v['git']['branch'])) {
+    $branch = $this->v['git']['branch'];
+}
 $navType = isset($this->v['navType']) ? $this->v['navType'] : 'home';
-$prefix = $this->v['prefix'];
+$prefix = isset($this->v['prefix']) ? $this->v['prefix'] : '';
 ?>
+<nav class="navbar navbar-inverse">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                    data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Firegit</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+                <li<?= $mainNav == 'explore' ? ' class="active"' : '' ?>><a href="/explore">浏览</a></li>
+                <li<?= $mainNav == 'group' ? ' class="active"' : '' ?>><a href="/group">群组</a></li>
+            </ul>
+
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="/user/login">登录</a></li>
+                <li><a href="/user/logout">注销</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
 <div class="fluid-container">
-    <h1>
-        <?= $this->v['git']['group'] ?>/<?= $this->v['git']['name'] ?>
-        <small><?= $this->v['git']['url'] ?></small>
-    </h1>
+    <?php if (isset($this->v['git'])): ?>
+        <?php if (!isset($this->v['git']['url'])): ?>
+            <ol class="breadcrumb">
+                <li class="active"><a href="/<?= $this->v['git']['group'] ?>"><?= $this->v['git']['group'] ?></a></li>
+            </ol>
+        <?php else: ?>
+            <ol class="breadcrumb">
+                <li><a href="/<?= $this->v['git']['group'] ?>"><?= $this->v['git']['group'] ?></a></li>
+                <li class="active"><?= $this->v['git']['name'] ?></li>
+                <li class="pull-right"><?= $this->v['git']['url'] ?></li>
+            </ol>
+        <?php endif ?>
+    <?php endif ?>
 
-    <ul class="nav nav-tabs">
-        <li role="presentation"<?= ($navType == 'home' ? ' class="active"' : '') ?>><a href="<?= $prefix ?>">首页</a></li>
-        <li role="presentation"<?= ($navType == 'commit' ? ' class="active"' : '') ?>><a href="<?= $prefix ?>commits/<?= $branch ?>">提交</a></li>
-        <li role="presentation"<?= ($navType == 'branch' ? ' class="active"' : '') ?>><a href="<?= $prefix ?>branches">分支</a>
-        <li role="presentation"<?= ($navType == 'merge' ? ' class="active"' : '') ?>><a href="<?= $prefix ?>merges">合并</a>
-        </li>
+    <?php if ($branch): ?>
+        <ul class="nav nav-tabs">
+            <li role="presentation"<?= ($navType == 'home' ? ' class="active"' : '') ?>><a
+                    href="<?= $prefix ?>">代码</a>
+            </li>
+            <li role="presentation"<?= ($navType == 'commit' ? ' class="active"' : '') ?>><a
+                    href="<?= $prefix ?>commits/<?= $branch ?>">提交</a></li>
+            <li role="presentation"<?= ($navType == 'branch' ? ' class="active"' : '') ?>><a
+                    href="<?= $prefix ?>branches">分支</a>
+            <li role="presentation"<?= ($navType == 'merge' ? ' class="active"' : '') ?>><a
+                    href="<?= $prefix ?>merges">合并</a>
+            </li>
 
-        <li role="presentation"<?= ($navType == 'tags' ? ' class="active"' : '') ?>><a href="<?= $prefix ?>tags">标签</a>
-        </li>
+            <li role="presentation"<?= ($navType == 'tags' ? ' class="active"' : '') ?>><a
+                    href="<?= $prefix ?>tags">标签</a>
+            </li>
+        </ul>
+    <?php endif ?>
 
-    </ul>
     <?php if (empty($this->v['notShowNav']) && isset($this->v['branches']) && count($this->v['branches']) > 1): ?>
         <div class="dropdown">
             <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown"
@@ -60,13 +122,12 @@ $prefix = $this->v['prefix'];
 
     <?= $this->getContent() ?>
 
-
 </div>
 
 <footer class="text-center">
     <hr/>
     copyright@firegit.com<br/>
-    <em><?=date('Y/m/d H:i:s')?></em>
+    <em><?= date('Y/m/d H:i:s') ?></em>
 </footer>
 
 
