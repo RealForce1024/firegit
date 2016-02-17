@@ -52,7 +52,7 @@ class Reposite
     public function delBranch($branch)
     {
         chdir($this->dir);
-        $cmd = sprintf('git branch -d %s', $branch);
+        $cmd = sprintf('git branch -D %s', $branch);
         exec($cmd, $lines, $code);
         return $code;
     }
@@ -152,7 +152,7 @@ class Reposite
     function listCommits($hashStart, $hashEnd)
     {
         chdir($this->dir);
-        $cmd = sprintf('git log --oneline --format="%s" %s..%s', '%H %ct %an %s', $hashEnd, $hashStart);
+        $cmd = sprintf('git log --oneline --format="%s" %s..%s', '%H %ct %an %s', $hashStart, $hashEnd);
         exec($cmd, $lines, $code);
         return self::parseCommitsLines($lines);
     }
@@ -434,13 +434,14 @@ class Reposite
             $commitFrom = $commitFrom . '^';
         }
         chdir($this->dir);
-        $cmd = sprintf('git diff %s..%s ', $commitEnd, $commitFrom);
+        $cmd = sprintf('git diff %s..%s ', $commitFrom, $commitEnd);
         exec($cmd, $lines, $code);
         $diffs = array();
         $diff = null;
         $blocks = null;
         $fromLine = 0;
         $toLine = 0;
+        $incrLine = true;
         for ($i = 0, $l = count($lines); $i < $l; $i++) {
             $line = $lines[$i];
             if (strpos($line, 'diff --git ') === 0) {
@@ -496,18 +497,29 @@ class Reposite
                         'to' => $toLine,
                         'line' => $line,
                     );
+                    if (substr($line, -3) == ' @@') {
+                        $incrLine = false;
+                    }
                 } else {
                     if ($line) {
                         switch ($line[0]) {
                             case '-': // 表示是起始commit的文件
-                                $fromLine++;
+                                if (!$incrLine) {
+                                    $incrLine = true;
+                                } else {
+                                    $fromLine++;
+                                }
                                 $blocks[] = array(
                                     'from' => $fromLine,
                                     'line' => $line
                                 );
                                 break;
                             case '+':
-                                $toLine++;
+                                if (!$incrLine) {
+                                    $incrLine = true;
+                                } else {
+                                    $toLine++;
+                                }
                                 $blocks[] = array(
                                     'to' => $toLine,
                                     'line' => $line,
@@ -519,8 +531,13 @@ class Reposite
                                 );
                                 break;
                             default:
-                                $fromLine++;
-                                $toLine++;
+                                if (!$incrLine) {
+                                    $incrLine = true;
+                                } else {
+                                    $fromLine++;
+                                    $toLine++;
+                                }
+
                                 $blocks[] = array(
                                     'from' => $fromLine,
                                     'to' => $toLine,
@@ -528,8 +545,12 @@ class Reposite
                                 );
                         }
                     } else {
-                        $fromLine++;
-                        $toLine++;
+                        if (!$incrLine) {
+                            $incrLine = true;
+                        } else {
+                            $fromLine++;
+                            $toLine++;
+                        }
                         $blocks[] = array(
                             'from' => $fromLine,
                             'to' => $toLine,
