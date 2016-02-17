@@ -3,10 +3,11 @@ namespace firegit\app\mod\git;
 
 use \firegit\db\Db;
 
-const MERGE_STATUS_UNMERGED = 0;
-const MERGE_STATUS_MERGING = 1;
-const MERGE_STATUS_PASSED = 2;
-const MERGE_STATUS_DENIED = 4;
+const MERGE_STATUS_UNMERGED = 0x1;
+const MERGE_STATUS_MERGING = 0x2;
+const MERGE_STATUS_MERGED = 0x4;
+const MERGE_STATUS_FAILED = 0x8;
+const MERGE_STATUS_CANCELED = 0x10;
 
 class Merge
 {
@@ -37,6 +38,13 @@ class Merge
             throw new \Exception('merge.destNotFound branch=' . $dest);
         }
 
+        // 获取原始分支和目标分支的hash值
+        $origHash = $reposite->getBranchHash($orig);
+        $destHash = $reposite->getBranchHash($dest);
+        if (!$origHash || !$destHash) {
+            throw new \Exception('merge.hashGetFailed');
+        }
+
         $db = Db::get('firegit');
         $db->table('fg_merge')
             ->unique('merge_id')
@@ -46,12 +54,45 @@ class Merge
                 'user_id' => intval($userId),
                 'title' => isset($info['title']) ? $info['title'] : $orig,
                 'orig_branch' => $orig,
+                'orig_hash' => $origHash,
                 'dest_branch' => $dest,
+                'dest_hash' => $destHash,
                 '`desc`' => isset($info['desc']) ? $info['desc'] : '',
                 'create_time' => time(),
                 'merge_status' => MERGE_STATUS_UNMERGED,
             ))->insert();
         return $db->getLastInsertId();
+    }
+
+    /**
+     * 将指定的合并对应的合并请求标志为合并成功
+     * @param $repoGroup
+     * @param $repoName
+     * @param $merges
+     * @return array
+     */
+    function handleMerges($repoGroup, $repoName, $merges)
+    {
+        // 现获取所有的合并
+        $db = Db::get('firegit');
+        $rows = $db
+            ->table('fg_merge')
+            ->field('merge_id', 'orig_hash', 'dest_hash')
+            ->where(array(
+                'repo_group' => $repoGroup,
+                'repo_name' => $repoName,
+                'merge_status!' => MERGE_STATUS_CANCELED
+            ))
+            ->order('merge_id', false)
+            ->get();
+        foreach ($merges as $key => $merge) {
+            foreach($rows as $key => $row) {
+                if ($merge['orig'] == $row['orig_hash'] && $merge['dest'] == $row['dest_hash']) {
+                    $this->endMerge($row['merge_id'], MERGE_STATUS_MERGED);
+                    unset($rows[$key]);
+                }
+            }
+        }
     }
 
     /**
@@ -61,16 +102,34 @@ class Merge
      * @param boolean $passed 是否通过
      * @param string $remark 评论
      */
-    function handleMerge($mergeId, $userId, $passed, $remark)
+    function beginMerge($mergeId, $userId, $passed, $remark)
     {
         Db::get('firegit')->table('fg_merge')
             ->where(array(
                 'merge_Id' => intval($mergeId)
             ))->saveBody(array(
                 'merge_user_id' => intval($userId),
-                'passed' => $passed ? MERGE_STATUS_PASSED : MERGE_STATUS_DENIED,
+                'passed' => $passed ? 1 : 0,
                 'merge_remark' => $remark ? $remark : '',
+                'merge_status' => 2,
                 'merge_time' => time(),
+            ))->update();
+    }
+
+    /**
+     * 更改合并状态
+     * @param $mergeId
+     * @param boolean $success 合并是否成功
+     * @param string $log
+     */
+    function endMerge($mergeId, $success, $log = '')
+    {
+        Db::get('firegit')->table('fg_merge')
+            ->where(array(
+                'merge_Id' => intval($mergeId)
+            ))->saveBody(array(
+                'merge_status' => $success ? MERGE_STATUS_MERGED : MERGE_STATUS_FAILED,
+                'merge_log' => mb_substr($log, 0, 1023)
             ))->update();
     }
 

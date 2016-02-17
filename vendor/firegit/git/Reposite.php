@@ -1,6 +1,8 @@
 <?php
 namespace firegit\git;
 
+define('ZERO_COMMIT', str_repeat('0', 40));
+
 class Reposite
 {
     var $group;
@@ -150,7 +152,7 @@ class Reposite
     function listCommits($hashStart, $hashEnd)
     {
         chdir($this->dir);
-        $cmd = sprintf('git log --oneline --format="%s" %s..%s', '%H %ct %an %s', $hashStart, $hashEnd);
+        $cmd = sprintf('git log --oneline --format="%s" %s..%s', '%H %ct %an %s', $hashEnd, $hashStart);
         exec($cmd, $lines, $code);
         return self::parseCommitsLines($lines);
     }
@@ -190,7 +192,7 @@ class Reposite
         chdir($this->dir);
         $cmd = sprintf('git tag -n');
         exec($cmd, $lines, $code);
-        if(!empty($lines)){
+        if (!empty($lines)) {
             //TODO
         }
         return $lines;
@@ -302,6 +304,48 @@ class Reposite
         }
 
         return $node;
+    }
+
+    /**
+     * 检查分支是否存在
+     * @param $branch
+     * @return bool
+     */
+    function isBranchExists($branch)
+    {
+        chdir($this->dir);
+        system('git show-branch ' . $branch . ' > /dev/null 2>&1', $code);
+        return $code === 0;
+    }
+
+
+    /**
+     * 获取合并的提交
+     * @param $fromHash
+     * @param $endHash
+     * @return array
+     */
+    function listMergeCommits($fromHash, $endHash)
+    {
+        chdir($this->dir);
+        $cmd = sprintf('git log --merges --pretty=raw -1 %s%s', $fromHash == ZERO_COMMIT ? '' : $fromHash.'..', $endHash);
+        exec($cmd, $lines, $code);
+        $ret = array();
+        while(true) {
+            $line = array_shift($lines);
+            if ($line === null) {
+                break;
+            }
+            if (substr($line, 0, 7) == 'commit ') {
+                $commit = array();
+                $commit['hash'] = substr($line, 7);
+                $commit['tree'] = substr(array_shift($lines), strlen('tree '));
+                $commit['dest'] = substr(array_shift($lines), strlen('parent '));
+                $commit['orig'] = substr(array_shift($lines), strlen('parent '));
+                $ret[] = $commit;
+            }
+        }
+        return $ret;
     }
 
     /**
@@ -573,183 +617,65 @@ class Reposite
         return $ret;
     }
 
-
     /**
-     * 文件追责->获取变化
-     * @param $commitFrom
-     * @return array
+     * 获取分支对应的hash值
+     * @param $branch
+     * @return bool|string
      */
-    function listDiffsBlame($info, $path, $commitFrom, $commitEnd = null)
+    function getBranchHash($branch)
     {
-        if ($commitEnd === null) {
-            $commitEnd = $commitFrom;
-            $commitFrom = $commitFrom . '^';
-        }
         chdir($this->dir);
-        $cmd = sprintf('git diff %s..%s ', $commitFrom, $commitEnd);
-        exec($cmd, $lines, $code);
-        $diffs = array();
-        $diff = null;
-        $blocks = null;
-        $fromLine = 0;
-        $toLine = 0;
-        for ($i = 0, $l = count($lines); $i < $l; $i++) {
-            $line = $lines[$i];
-            if (strpos($line, 'diff --git ') === 0) {
-                if ($diff) {
-                    if ($blocks) {
-                        $diff['blocks'][] = $blocks;
-                        $blocks = array();
-                    }
-                    $diffs[] = $diff;
-                }
-
-                $diff = array(
-                    'from' => array(),
-                    'to' => array(),
-                    'blocks' => array(),
-                );
-                $arr = explode(' ', $line);
-                $diff['from']['path'] = substr($arr[2], 1);
-                $diff['to']['path'] = substr($arr[3], 1);
-
-                // 查找下一行
-                $i++;
-                $line = $lines[$i];
-                if (strncmp($line, 'index', 5) !== 0) {
-                    $i++;
-                    $line = $lines[$i];
-                }
-                $arr = preg_split('#(\s|\.\.)#', $line);
-                $diff['from']['hash'] = $arr[1];
-                $diff['to']['hash'] = $arr[2];
-
-                // 跨越两行
-                $i++;
-                $line = $lines[$i];
-                if (strncmp($line, 'Binary', 6) === 0) {
-                    $diff['type'] = 'bin';
-                } else {
-                    $diff['type'] = 'file';
-                    $i++;
-                }
-            } else {
-                if (strpos($line, '@@ -') === 0) {
-                    if ($blocks) {
-                        $diff['blocks'][] = $blocks;
-                    }
-                    $blocks = array();
-
-                    $arr = explode(' ', $line, 5);
-                    list($fromLine) = explode(',', substr($arr[1], 1));
-                    list($toLine) = explode(',', substr($arr[2], 1));
-                    $blocks[] = array(
-                        'from' => $fromLine,
-                        'to' => $toLine,
-                        'line' => $line,
-                        'hash' => $commitFrom,
-                        'author' => $info['author'],
-                        'time' => $info['time'],
-                        'msg' => $info['msg']
-                    );
-                } else {
-                    if ($line) {
-                        switch ($line[0]) {
-                            case '-': // 表示是起始commit的文件
-                                $fromLine++;
-                                $blocks[] = array(
-                                    'from' => $fromLine,
-                                    'line' => $line,
-                                    'hash' => $commitFrom,
-                                    'author' => $info['author'],
-                                    'time' => $info['time'],
-                                    'msg' => $info['msg']
-                                );
-                                break;
-                            case '+':
-                                $toLine++;
-                                $blocks[] = array(
-                                    'to' => $toLine,
-                                    'line' => $line,
-                                    'hash' => $commitFrom,
-                                    'author' => $info['author'],
-                                    'time' => $info['time'],
-                                    'msg' => $info['msg']
-                                );
-                                break;
-                            case '\\':
-                                $blocks[] = array(
-                                    'line' => $line,
-                                    'hash' => $commitFrom,
-                                    'author' => $info['author'],
-                                    'time' => $info['time'],
-                                    'msg' => $info['msg']
-                                );
-                                break;
-                            default:
-                                $fromLine++;
-                                $toLine++;
-                                $blocks[] = array(
-                                    'from' => $fromLine,
-                                    'to' => $toLine,
-                                    'line' => $line,
-                                    'hash' => $commitFrom,
-                                    'author' => $info['author'],
-                                    'time' => $info['time'],
-                                    'msg' => $info['msg']
-                                );
-                        }
-                    } else {
-                        $fromLine++;
-                        $toLine++;
-                        $blocks[] = array(
-                            'from' => $fromLine,
-                            'to' => $toLine,
-                            'line' => $line,
-                            'hash' => $commitFrom,
-                            'author' => $info['author'],
-                            'time' => $info['time'],
-                            'msg' => $info['msg']
-                        );
-                    }
-                }
-            }
+        $hash = system('git show-ref -s '.Util::normalBranch($branch));
+        if ($hash) {
+            return $hash;
         }
-        if (!empty($blocks)) {
-            $diff['blocks'][] = $blocks;
-        }
-        if (!empty($diff)) {
-            $diffs[] = $diff;
-        }
-        foreach($diffs as $diff_key=>$diff_val){
-            if($diff_val['from']['path'] == '/'.$path){
-                foreach($diff_val['blocks'] as $bl_key=>$bl_val){
-                    
-                }
-                return $diff_val;
-            };
-        }
+        return false;
     }
 
     /**
      * 文件追责
+     * @param $branch
      * @param $path
      * @return string
      */
     function getBlame($path)
     {
         $log = $this->getHistory($path);
-        $flag = 0;
-        foreach ( $log['commits'] as $log_key=>$log_val) {
-            $flag++;
-            if(isset($log['commits'][$flag])){
-
-            }
-            $diff = $this->listDiffsBlame($log_val, $path, $log_val['hash']);
-            return $diff;
+        return $log['commits'];
+        foreach ($log['commits'] as $log_key => $log_val) {
+            return next($log_val);
         }
 
-        return $diff;
+        $cmd = sprintf('git blame ../%s', $path);
+        exec($cmd, $lines, $code);
+        // 没有找到该分支的任何文件
+        if ($code !== 0) {
+            $lines = array();
+            return $lines;
+        }
+        return $lines;
+        print_r($lines);
+        die;
+        $return_blame = array();
+        $return_blames = array();
+        for ($i = 0, $l = count($lines); $i < $l; $i++) {
+            $return_blame[$i] = explode(' ', $lines[$i], 2);
+            $return_blames[$i]['hase'] = $return_blame[$i][0];//哈希值
+            $index = strpos($return_blame[$i][1], ')') + 1;
+            $name = rtrim(ltrim(mb_substr($return_blame[$i][1], 0, $index), '('), ')');
+            $return_blames[$i]['name_time'] = $name;
+            $content = mb_substr($return_blame[$i][1], $index);
+            $return_blames[$i]['contents'] = $content ? $content : array();
+
+        }
+        $arr = array();
+        foreach ($return_blames as $k => $v) {
+            $arr[] = $v['hase'] . $v['name_time'] . $v['contents'];
+
+        }
+        print_r($arr);
+        die;
+        return $return_blames;
     }
 
     /**
@@ -758,7 +684,7 @@ class Reposite
     function getHistory($path)
     {
         chdir($this->dir);
-        $cmd = sprintf('git log --oneline --format="%s" -- %s', '%H %ct %an %s %ce', $path);
+        $cmd = sprintf('git log --oneline --format="%s" -- %s', '%H %ct %an %s', $path);
         exec($cmd, $lines, $code);
         $commits = self::parseCommitsLines($lines);
         return array(

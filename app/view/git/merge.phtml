@@ -1,4 +1,4 @@
-<h2><?=$this->v['merge']['title']?></h2>
+<h2><?= $this->v['merge']['title'] ?></h2>
 
 <ul class="nav nav-tabs" id="compareNav">
     <li class="active"><a href="#reviewList">评审</a></li>
@@ -11,30 +11,32 @@
           class="form-horizontal"
           method="post"
           action="<?= $this->v['prefix'] ?>_handle_merge"
+          data-hook="ajaxable"
     >
+        <input type="hidden" name="merge_id" value="<?= $this->v['merge']['merge_id'] ?>"/>
         <div class="form-group">
             <label class="col-sm-1 control-label">申请时间</label>
             <div class="col-sm-8">
-                <?=date('Y/m/d H:i:s', $this->v['merge']['create_time'])?>
+                <?= date('Y/m/d H:i:s', $this->v['merge']['create_time']) ?>
             </div>
         </div>
         <div class="form-group">
             <label class="col-sm-1 control-label">来源分支</label>
             <div class="col-sm-8">
-                <code><?=$this->v['orig']?></code>
+                <code><?= $this->v['orig'] ?></code>
             </div>
         </div>
         <div class="form-group">
             <label class="col-sm-1 control-label">目标分支</label>
             <div class="col-sm-8">
-                <code><?=$this->v['dest']?></code>
+                <code><?= $this->v['dest'] ?></code>
             </div>
         </div>
         <div class="form-group">
             <label class="col-sm-1 control-label">是否通过</label>
             <div class="col-sm-8">
-                <input type="radio" value="2"/> 通过
-                <input type="radio" value="4"/> 拒绝
+                <input type="radio" value="1" name="passed" required/> 通过
+                <input type="radio" value="0" name="passed"/> 拒绝
             </div>
         </div>
         <div class="form-group">
@@ -45,7 +47,24 @@
         </div>
         <div class="form-group">
             <div class="col-sm-9 col-sm-offset-1">
-                <input type="submit" value="确定" class="btn btn-lg btn-primary"/>
+                <?php switch ($this->v['merge']['merge_status']):
+                    case 1:
+                        ?>
+                        <input type="submit" value="确定" class="btn btn-lg btn-primary"/>
+                        <?php break;
+                    case 2:
+                        ?>
+                        <span class="text-info">正在合并中...</span>
+                        <?php break;
+                    case
+                    4:
+                        ?>
+                        <span class="text-primary">合并成功</span>
+                        <?php break;
+                    case
+                    8: ?>
+                        <span class="text-primary">合并失败</span>
+                    <?php endswitch ?>
             </div>
         </div>
     </form>
@@ -53,7 +72,7 @@
 
 <div id="commitList" class="navList"
      data-href="<?= $this->v['prefix'] ?>dcommit/?orig=<?= $this->v['orig'] ?>&dest=<?= $this->v['dest'] ?>"
-    >
+>
     <table class="table table-striped table-hover table-responsive">
         <tbody></tbody>
     </table>
@@ -65,7 +84,7 @@
 ></div>
 
 <script>
-    !function($) {
+    $(function () {
         var nav = $('#compareNav'), loaded = {};
         nav.delegate('a', 'click', function () {
             var href = this.getAttribute('href');
@@ -76,7 +95,7 @@
             node.show();
             if (node.data('href') && !loaded[href]) {
                 loaded[href] = true;
-                $.get(node.data('href'), function(html) {
+                $.get(node.data('href'), function (html) {
                     if (node.find('tbody').length) {
                         node.find('tbody').append(html);
                     } else {
@@ -86,19 +105,7 @@
             }
         });
 
-        hapj.conf.set('hook.mergeform', {
-            success: function(ret) {
-                dialog({
-                    content:'添加合并请求成功',
-                    title:'操作成功',
-                    width:300,
-                    okText:'确定',
-                    ok: function() {
-                        location.href = '<?=$this->v['prefix']?>merge/' + ret.data.merge_id;
-                    }
-                }).show();
-            }
-        });
-    }(jQuery);
+        $.firegit.errMap['firegit.u_mergeing'] = '合并正在进行...';
+    });
 
 </script>
