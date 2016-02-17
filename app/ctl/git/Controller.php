@@ -402,9 +402,7 @@ class Controller extends \firegit\http\Controller
         print_r($blame);die;
         $this->response
             ->set(array(
-                'blame' => $blame,
-                'model' => 'blame',
-            ))
+                'blame' => $blame))
             ->setView('git/blame.phtml');
     }
 
