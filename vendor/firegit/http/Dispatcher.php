@@ -102,6 +102,9 @@ class Dispatcher
      */
     public static function onError($errno, $errstr, $errfile, $errline)
     {
+//        if ($errno == E_USER_NOTICE) {
+//            return;
+//        }
         if (!(error_reporting() & $errno)) {
             // This error code is not included in error_reporting
             return;
@@ -128,7 +131,17 @@ class Dispatcher
                 echo "Unknown error type: [$errno] $errstr in {$errfile}[line {$errline}]<br />\n";
                 break;
         }
-
+//        if (self::$res) {
+//            ob_get_clean();
+//            self::$res->setError(array(
+//                'code' => $errno,
+//                'msg' => $errstr,
+//                'file' => $errfile,
+//                'line' => $errline,
+//            ))->output(self::$req);
+//            exit(1);
+//        }
+        exit(1);
         /* Don't execute PHP internal error handler */
         return true;
     }

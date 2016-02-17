@@ -22,6 +22,9 @@ class Controller extends \firegit\http\Controller
      */
     private $repo;
 
+    use MergeTrait;
+    use BranchTrait;
+
     function _before()
     {
         $this->gitGroup = $_SERVER['GIT_GROUP'];
@@ -197,147 +200,6 @@ class Controller extends \firegit\http\Controller
         ))->setView('git/commit.phtml');
     }
 
-    function branches_action()
-    {
-        $this->setBranch();
-
-        $branches = $this->repo->listBranches();
-        $this->response
-            ->set(array(
-                'navType' => 'branch',
-                'branches' => $branches,
-                'notShowNav' => true,
-            ))
-            ->setView('git/branches.phtml');
-    }
-
-    /**
-     * 创建新分支
-     */
-    function _new_branch_action()
-    {
-        $orig = $_POST['orig'];
-        $dest = $_POST['dest'];
-
-        if (!preg_match(GIT_BRANCH_RULE, $dest)) {
-            throw new \Exception('firegit.illegalBranch');
-        }
-
-        \firegit\git\Manager::doTask(
-            'newBranch',
-            $this->gitGroup,
-            $this->gitName,
-            array(
-                'orig' => $orig,
-                'dest' => $dest
-            )
-        );
-    }
-
-    /**
-     * 删除分支
-     */
-    function _del_branch_action()
-    {
-        $branch = implode('/', func_get_args());
-        \firegit\git\Manager::doTask(
-            'delBranch',
-            $this->gitGroup,
-            $this->gitName,
-            array(
-                'branch' => $branch,
-            )
-        );
-    }
-
-
-    function tags_action()
-    {
-        $branches = $this->repo->listBranches();//分支列表
-        $tags = $this->repo->listTags();//标签列表
-        $this->setBranch();
-        $this->response->set(array(
-            'navType' => 'tags',
-            'tage' => $tags,
-            'branchelist' => $branches,
-        ))->setView('git/tags.phtml');
-    }
-    function _add_tags_action()
-    {
-        $datas = $this->posts('orig', 'remark', 'tagname');
-        $cd = \firegit\git\Manager::doTask(
-            'addTag',
-            $this->gitGroup,
-            $this->gitName,
-            $datas
-        );
-    }
-
-    function merges_action()
-    {
-        $this->setBranch();
-
-        $merge = new \firegit\app\mod\git\Merge();
-        $merges = $merge->pagedGetMerges(
-            $this->gitGroup,
-            $this->gitName,
-            $this->_pn,
-            $this->_sz);
-
-        $branches = $this->repo->listBranches();
-
-        $this->response->set(array(
-            'total' => $merges['total'],
-            'merges' => $merges['list'],
-            'navType' => 'merge',
-            'branches' => $branches,
-            'notShowNav' => true,
-        ))->setView('git/merges.phtml');
-    }
-
-    function add_merge_action()
-    {
-        $this->setBranch();
-
-        $orig = $_GET['orig'];
-        $dest = $_GET['dest'];
-
-        $commits = $this->repo->listCommits($orig, $dest);
-
-        $nCommits = array();
-        foreach ($commits as $commit) {
-            $day = date('Y/m/d', $commit['time']);
-            $nCommits[$day][] = $commit;
-        }
-        $this->response->set(array(
-            'commits' => $nCommits,
-            'navType' => 'merge',
-            'orig' => $orig,
-            'dest' => $dest,
-        ))->setView('git/add_merge.phtml');
-    }
-
-    function _add_merge_action()
-    {
-        $datas = $this->posts('orig', 'dest', 'title', 'desc');
-
-        $merge = new \firegit\app\mod\git\Merge();
-        $mergeId = $merge->addMerge(
-            $this->gitGroup,
-            $this->gitName,
-            $datas['orig'],
-            $datas['dest'],
-            40,
-            array(
-                'title' => $datas['title'],
-                'desc' => $datas['desc'],
-            )
-        );
-        $this->set(array(
-            'merge_id' => $mergeId,
-        ));
-    }
-
     function diff_action()
     {
         $orig = $this->get('orig');
@@ -356,30 +218,6 @@ class Controller extends \firegit\http\Controller
         $this->response->set(array(
             'commits' => $this->packCommits($commits),
         ))->setView('git/components/commits.phtml');
-    }
-
-    function merge_action($mergeId)
-    {
-        $this->setBranch();
-
-        $api = new \firegit\app\mod\git\Merge();
-        $merge = $api->getMerge($mergeId);
-
-        if (!$merge) {
-            throw new \Exception('firegit.u_notfound');
-        }
-        $orig = $merge['orig_branch'];
-        $dest = $merge['dest_branch'];
-
-        $commits = $this->repo->listCommits($orig, $dest);
-
-        $this->response->set(array(
-            'merge' => $merge,
-            'commits' => $this->packCommits($commits),
-            'navType' => 'merge',
-            'orig' => $orig,
-            'dest' => $dest,
-        ))->setView('git/merge.phtml');
     }
 
     private function packCommits($commits)

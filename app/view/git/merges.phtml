@@ -6,15 +6,28 @@
     }"><em class="glyphicon glyphicon-plus"></em>添加合并请求</a>
 </div>
 <table class="clearfix table table-striped table-hover table-responsive">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>标题</th>
+        <th>来源分支</th>
+        <th>目标分支</th>
+        <th>创建时间</th>
+    </tr>
+    </thead>
+    <tbody>
     <?php foreach ($this->v['merges'] as $merge): ?>
         <tr>
-            <td><?= $merge['merge_id'] ?></td>
-            <td><a href="<?=$this->v['prefix']?>merge/<?=$merge['merge_id']?>"><?=$merge['title']?></a></td>
+            <td>#<?= $merge['merge_id'] ?></td>
+            <td><a href="<?= $this->v['prefix'].$merge['merge_id']?>"><?=$merge['title']?></a></td>
+            <td><a href="<?= $this->v['prefix'].$merge['orig_branch']?>"><?=$merge['orig_branch']?></td>
+            <td><a href="<?= $this->v['prefix'].$merge['dest_branch']?>"><?=$merge['dest_branch']?></td>
             <td>
-                <a href="<?=$this->v['prefix']?>merge/<?=$merge['merge_id']?>/edit">编辑</a>
+                <?=date('Y/m/d H:i:s', $merge['create_time'])?>
             </td>
         </tr>
     <?php endforeach ?>
+    </tbody>
 </table>
 
 <div id="dialog" style="display: none">
