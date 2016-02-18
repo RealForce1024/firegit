@@ -8,8 +8,8 @@
                             <?php foreach ($this->v['blame'] as $block): ?>
                                         <tr class="block">
 <!--                                            <td >--><?//= $block['msg'] ?><!--</td>-->
-                                            <td ><?= $block['author'] ?></td>
-                                            <td class="line-to"><?= $block['line'] ?></td>
+                                            <td class="line-to"><?= $block['author'] ?></td>
+                                            <td class="line-to"><?= $block['hash'] ?></td>
                                             <td class="code"><?= str_replace(' ', '&nbsp;',
                                                     htmlentities($block['code'])) ?></td>
                                         </tr>

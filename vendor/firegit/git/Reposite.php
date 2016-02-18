@@ -109,7 +109,7 @@ class Reposite
     function pagedGetCommits($hash, $num = 40)
     {
         chdir($this->dir);
-        $cmd = sprintf('git log --oneline -%d %s --format="%s"', $num + 1, $hash, '%H %ct %an %s');
+        $cmd = sprintf('git log --oneline -%d %s --format="%s"', $num + 1, $hash, '%ct %H %an %s');
         exec($cmd, $lines, $code);
         $commits = array();
         $next = null;
@@ -134,8 +134,8 @@ class Reposite
         foreach ($lines as $line) {
             $arr = explode(' ', $line, 4);
             $commits[] = array(
-                'time' => $arr[1],
-                'hash' => $arr[0],
+                'time' => $arr[0],
+                'hash' => $arr[1],
                 'author' => $arr[2],
                 'msg' => isset($arr[3]) ? $arr[3] : '',
             );
@@ -435,7 +435,7 @@ class Reposite
             $commitFrom = $commitFrom . '^';
         }
         chdir($this->dir);
-        $cmd = sprintf('git diff %s..%s %s', $commitFrom, $commitEnd, $path !== null ? ' -- ./'.$path : '');
+        $cmd = sprintf('git diff %s..%s %s', $commitFrom, $commitEnd, $path !== null ? ' -- ./' . $path : '');
         exec($cmd, $lines, $code);
         $diffs = array();
         $diff = null;
@@ -657,7 +657,6 @@ class Reposite
 
     /**
      * 文件追责
-     * @param $branch
      * @param $path
      * @return string
      */
@@ -668,38 +667,44 @@ class Reposite
         $arr = null;
         $log = $this->getHistory($path);
         $log = $log['commits'];
-
         $firstHash = $log[0]['hash'];
-        exec(sprintf('git ls-tree %s %s', $firstHash, './'.$path), $outputs);
-
-        exec('git show c1d496b32886180f66a2c14968bec55340e5344c', $content);
-
-//        asort($log);
-        foreach ( $log as $log_key=>$log_val) {
+        exec(sprintf('git ls-tree %s %s', $firstHash, './' . $path), $outputs);
+        $next = explode(' ', $outputs[0]);
+        exec('git show ' . substr($next[2], 0, 40), $content);
+        asort($log);
+        $c = 0;
+        foreach ($log as $log_key => $log_val) {
             $diff = $this->listDiffs($log_val['hash'], null, $path);
-            foreach($diff['blocks'] as $arr_key=>$arr_val){
-                foreach($arr_val as $val_key=>$val_val){
+            foreach ($diff[0]['blocks'] as $arr_key => $arr_val) {
+                foreach ($arr_val as $val_key => $val_val) {
                     if (strpos($val_val['line'], '+') === 0) {
-                        --$val_val['to'];
-                        $arr[$val_val['to']]['code'] = ltrim($val_val['line'], '+');
-                        $arr[$val_val['to']]['hash'] = $val_val['hash'];
-                        $arr[$val_val['to']]['author'] = $val_val['author'];
-                        $arr[$val_val['to']]['msg'] = $val_val['msg'];
-                        $arr[$val_val['to']]['line'] = $val_val['to'];
-//                    }elseif(strpos($val_val['line'], '-') === 0){
-//                        print_r($diff['blocks']);die;
-//                        return $val_val;
-//                        --$val_val['from'];
-//                        unset($arr[$val_val['from']]);
-//                        //return $val_val;
+                        --$val_val['to'];$c++;
+                        $arr[$c]['time'] = $log_val['time'];
+                        $arr[$c]['code'] = ltrim($val_val['line'], '+');
+                        $arr[$c]['hash'] = $log_val['hash'];
+                        $arr[$c]['author'] = $log_val['author'];
+                        $arr[$c]['msg'] = $log_val['msg'];
+                        $arr[$c]['line'] = $val_val['to'];
                     }
+                }
+            }
+        }asort($arr);
+
+        $html = array();
+        foreach($content as $content_key=>$count_val){
+            foreach($arr as $arr_key=>$arr_val){
+                if($count_val==$arr_val['code']){
+
+                    $html[$content_key]['code'] = $arr_val['code'];
+                    $html[$content_key]['hash'] = $arr_val['hash'];
+                    $html[$content_key]['author'] = $arr_val['author'];
+                    $html[$content_key]['time'] = date('Y-m-d H:i:s', $arr_val['time']);
                 }
 
             }
 
         }
-        ksort($arr);
-        return $arr;
+        return $html;
     }
 
     /**
@@ -714,6 +719,17 @@ class Reposite
         return array(
             'commits' => $commits,
         );
+    }
+
+    /**
+     * 打标签
+     */
+    public function addTag($orig, $tagname)
+    {
+        chdir($this->dir);
+        $cmd = sprintf('git tag %s %s', $tagname, $orig);
+        exec($cmd, $outputs, $code);
+        return $code;
     }
 
 }
