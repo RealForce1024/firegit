@@ -12,6 +12,9 @@ class Util
      */
     public static function normalBranch($branch)
     {
+        if (preg_match('#^[a-z0-9]{40}$#', $branch) ) {
+            return $branch;
+        }
         return self::BRANCH_PREFIX.$branch;
     }
 

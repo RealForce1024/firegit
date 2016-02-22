@@ -111,7 +111,6 @@ class Reposite
         chdir($this->dir);
         $cmd = sprintf('git log --oneline -%d %s --format="%s"', $num + 1, $hash, '%ct %H %an %s');
         exec($cmd, $lines, $code);
-        $commits = array();
         $next = null;
         if (count($lines) > $num) {
             $next = explode(' ', array_pop($lines), 2);
@@ -152,7 +151,7 @@ class Reposite
     function listCommits($hashStart, $hashEnd)
     {
         chdir($this->dir);
-        $cmd = sprintf('git log --oneline --format="%s" %s..%s', '%H %ct %an %s', $hashStart, $hashEnd);
+        $cmd = sprintf('git log --oneline --format="%s" %s..%s', '%ct %H %an %s', $hashStart, $hashEnd);
         exec($cmd, $lines, $code);
         return self::parseCommitsLines($lines);
     }
@@ -442,7 +441,6 @@ class Reposite
         $blocks = null;
         $fromLine = 0;
         $toLine = 0;
-        $incrLine = true;
         for ($i = 0, $l = count($lines); $i < $l; $i++) {
             $line = $lines[$i];
             if (strpos($line, 'diff --git ') === 0) {
@@ -493,69 +491,58 @@ class Reposite
                     $arr = explode(' ', $line, 5);
                     list($fromLine) = explode(',', substr($arr[1], 1));
                     list($toLine) = explode(',', substr($arr[2], 1));
+                    $fromLine--;
+                    $toLine--;
                     $blocks[] = array(
                         'from' => $fromLine,
                         'to' => $toLine,
                         'line' => $line,
+                        'type' => 'both',
                     );
-                    if (substr($line, -3) == ' @@') {
-                        $incrLine = false;
-                    }
                 } else {
                     if ($line) {
                         switch ($line[0]) {
                             case '-': // 表示是起始commit的文件
-                                if (!$incrLine) {
-                                    $incrLine = true;
-                                } else {
-                                    $fromLine++;
-                                }
+                                $fromLine++;
                                 $blocks[] = array(
                                     'from' => $fromLine,
-                                    'line' => $line
+                                    'line' => $line,
+                                    'type' => 'decr',
                                 );
                                 break;
                             case '+':
-                                if (!$incrLine) {
-                                    $incrLine = true;
-                                } else {
-                                    $toLine++;
-                                }
+                                $toLine++;
                                 $blocks[] = array(
                                     'to' => $toLine,
                                     'line' => $line,
+                                    'type' => 'incr',
                                 );
                                 break;
                             case '\\':
                                 $blocks[] = array(
                                     'line' => $line,
+                                    'type' => 'end',
                                 );
                                 break;
                             default:
-                                if (!$incrLine) {
-                                    $incrLine = true;
-                                } else {
-                                    $fromLine++;
-                                    $toLine++;
-                                }
+                                $fromLine++;
+                                $toLine++;
 
                                 $blocks[] = array(
                                     'from' => $fromLine,
                                     'to' => $toLine,
                                     'line' => $line,
+                                    'type' => 'both',
                                 );
                         }
                     } else {
-                        if (!$incrLine) {
-                            $incrLine = true;
-                        } else {
-                            $fromLine++;
-                            $toLine++;
-                        }
+                        $fromLine++;
+                        $toLine++;
                         $blocks[] = array(
                             'from' => $fromLine,
                             'to' => $toLine,
                             'line' => $line,
+                            'type' => 'both',
                         );
                     }
                 }
