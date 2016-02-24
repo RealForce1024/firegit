@@ -14,19 +14,14 @@ class Request
     var $options = array();
     var $rawUri;
     var $isAjax = false;
+    var $data = array();
 
     function __construct()
     {
-        $uri = $_SERVER['REQUEST_URI'];
-        if (isset($_SERVER['REQUEST_RAWURI'])) {
-            $this->rawUri = $_SERVER['REQUEST_RAWURI'];
-        } else {
-            $this->rawUri = $uri;
-        }
+        $uri = $this->uri = $this->rawUri = $_SERVER['REQUEST_URI'];
         $info = parse_url($uri);
 
         $this->url = $info['path'];
-        $this->uri = $uri;
         $this->method = $_SERVER['REQUEST_METHOD'];
         $this->host = $_SERVER['HTTP_HOST'];
 
@@ -131,5 +126,31 @@ class Request
             }
         }
         return $ret;
+    }
+
+    /**
+     * 设置数据
+     * @param string $key
+     * @param mixed $value
+     * @return $this
+     */
+    function setData($key, $value)
+    {
+        $this->data[$key] = $value;
+        return $this;
+    }
+
+    /**
+     * 获取设置的数据
+     * @param string $key
+     * @param mixed $def
+     * @return null
+     */
+    function getData($key, $def = null)
+    {
+        if (isset($this->data[$key])) {
+            return $this->data[$key];
+        }
+        return $def;
     }
 }

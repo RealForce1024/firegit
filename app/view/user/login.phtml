@@ -1,0 +1,27 @@
+<h1>授权进行中...</h1>
+<p id="tokenResult"></p>
+<script>
+    var inLoginPage = location.pathname.indexOf('/user/login') === 0;
+    function onUserLoad(ret) {
+        if (ret.err == 'hapn.ok' && ret.data.user) {
+            if (inLoginPage) {
+                var user = ret.data.user;
+                $('#tokenResult').html('授权成功');
+                setTimeout(function () {
+                    location.href = '/user/login?user_id=' + user.user_id + '&username=' + user.username + '&time=' + ret.data
+                            .time + '&token=' + ret.data.token;
+                }, 500);
+            }
+        } else {
+            if (inLoginPage) {
+                $('#tokenResult').html('授权失败');
+                setTimeout(function () {
+                    location.href = 'http://dev.hapn.cc/user/login?u=' + encodeURIComponent(document.URL);
+                }, 500);
+            } else {
+                location.href = 'http://dev.hapn.cc/user/login?u=' + encodeURIComponent(document.URL);
+            }
+        }
+    }
+</script>
+<script src="http://dev.hapn.cc/api/user.json?callback=onUserLoad"></script>

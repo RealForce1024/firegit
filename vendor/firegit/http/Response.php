@@ -11,6 +11,8 @@ class Response
     private $ex;
     private $err;
 
+    private static $errMap = array();
+
 
     /**
      * 设置异常
@@ -98,22 +100,49 @@ class Response
     }
 
     /**
+     * 设置错误码的映射页面
+     * @param $msg
+     * @param $url
+     */
+    static function setErrMap($msg, $url = null)
+    {
+        if (is_array($msg) && $url === null) {
+            foreach($msg as $k => $v) {
+                self::$errMap[$k] = $v;
+            }
+        } else {
+            self::$errMap[$msg] = $url;
+        }
+    }
+
+    /**
      * 输出内容
      */
     function output(\firegit\http\Request $req)
     {
         if ($this->ex) {
+            $msg = $this->ex->getMessage();
+
+            if (isset(self::$errMap[$msg])) {
+                $url = str_replace('[u]', 'http://'.$req->host.$req->rawUri, self::$errMap[$msg]);
+                header('Location: ' . $url);
+                exit();
+            }
+
             $this->outputs = array(
                 'msg' => $this->ex->getMessage(),
                 'file' => str_replace(SITE_ROOT, '', $this->ex->getFile()),
                 'line' => $this->ex->getLine(),
             );
-        } else if ($this->err) {
-            $this->outputs = array(
-                'msg' => $this->err['msg'],
-                'file' => $this->err['file'],
-                'line' => $this->err['line'],
-            );
+
+        } else {
+            if ($this->err) {
+                $this->outputs = array(
+                    'msg' => $this->err['msg'],
+                    'file' => $this->err['file'],
+                    'line' => $this->err['line'],
+                );
+            }
         }
         $output = array(
             'status' => $this->status,
@@ -134,6 +163,7 @@ class Response
                 if ($this->tpl) {
                     $view = new \firegit\http\View();
                     $view->set($this->outputs);
+                    $view->set('req.data', $req->data);
                     if ($this->layout) {
                         $view->setLayout($this->layout);
                     }
@@ -161,5 +191,19 @@ class Response
                 }
                 break;
         }
+    }
+
+    /**
+     * 重定向
+     * @param $url
+     * @param bool $permanent
+     */
+    function redirect($url, $permanent = false)
+    {
+        if ($permanent) {
+            header('HTTP/1.1 301 Moved Permanently');
+        }
+        header('Location: '.$url);
+        exit();
     }
 }

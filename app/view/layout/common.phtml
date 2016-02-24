@@ -18,14 +18,22 @@
     <script src="/static/hapj/js/ui/suggestable.js"></script>
 
     <style>
-        .navbar{border-radius:0;}
-        .navbar-inverse{
-            background-color: #4e4f74;}
-        .navbar-inverse .navbar-nav>.active>a{
-            background-color: #676899;}
-        .navbar-inverse .navbar-nav>li>a {
+        .navbar {
+            border-radius: 0;
+        }
+
+        .navbar-inverse {
+            background-color: #4e4f74;
+        }
+
+        .navbar-inverse .navbar-nav > .active > a {
+            background-color: #676899;
+        }
+
+        .navbar-inverse .navbar-nav > li > a {
             color: #f6f6f6;
         }
+
         .navbar-inverse .navbar-brand {
             color: #f7f7f7;
         }
@@ -63,8 +71,12 @@ $prefix = isset($this->v['prefix']) ? $this->v['prefix'] : '';
             </ul>
 
             <ul class="nav navbar-nav navbar-right">
-                <li><a href="/user/login">登录</a></li>
-                <li><a href="/user/logout">注销</a></li>
+                <?php if (empty($this->v['req.data']['user'])): ?>
+                    <li><a href="/user/login">登录</a></li>
+                <?php else: ?>
+                    <li><a href="/user/login"><?=$this->v['req.data']['user']?></a></li>
+                    <li><a href="/user/logout">注销</a></li>
+                <?php endif ?>
             </ul>
         </div>
     </div>

@@ -6,6 +6,12 @@ class Dispatcher
     private static $req;
     private static $res;
 
+    const HOOK_NAME_BEFORE = 'before';
+    const HOOK_NAME_REQUEST = 'request';
+    const HOOK_NAME_AFTER = 'after';
+
+    private static $cbs = array();
+
     /**
      * 分配网址
      */
@@ -15,6 +21,14 @@ class Dispatcher
         set_error_handler("\\firegit\\http\\Dispatcher::onError");
 
         self::$req = $req = new Request();
+
+        // 调用Request的hook
+        if (isset(self::$cbs[self::HOOK_NAME_REQUEST]) ) {
+            foreach(self::$cbs[self::HOOK_NAME_REQUEST] as $cb) {
+                call_user_func($cb, $req);
+            }
+        }
+
         self::$res = $res = new Response();
 
         $path = $req->url;
@@ -73,6 +87,17 @@ class Dispatcher
             }
         }
         $ctl->method = $method;
+
+        // 调用hook
+        if (isset(self::$cbs[self::HOOK_NAME_BEFORE]) ) {
+            foreach(self::$cbs[self::HOOK_NAME_BEFORE] as $cb) {
+                $ret = call_user_func($cb, $req, $res);
+                if ($ret === false) {
+                    return $res->output($req);
+                }
+            }
+        }
+
         if (method_exists($ctl, '_before')) {
             call_user_func(array($ctl, '_before'));
         }
@@ -81,7 +106,26 @@ class Dispatcher
             call_user_func(array($ctl, '_after'));
         }
 
+        if (isset(self::$cbs[self::HOOK_NAME_AFTER]) ) {
+            foreach(self::$cbs[self::HOOK_NAME_AFTER] as $cb) {
+                $ret = call_user_func($cb, $req, $res);
+                if ($ret === false) {
+                    break;
+                }
+            }
+        }
+
         $res->output($req);
+    }
+
+    /**
+     * 增加hook函数
+     * @param $name
+     * @param $cb
+     */
+    public static function addHook($name, $cb)
+    {
+        self::$cbs[$name][] = $cb;
     }
 
     /**

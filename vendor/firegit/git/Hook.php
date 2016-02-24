@@ -70,7 +70,34 @@ class Hook
                 }
             }
         }
-return true;
         return true;
+    }
+
+    /**
+     * 从远程成功推送到服务器上时
+     * @return bool
+     */
+    function postReceive()
+    {
+        $commits = array();
+
+        while (!feof(STDIN)) {
+            $line = trim(fgets(STDIN));
+            if (!$line) {
+                continue;
+            }
+            list($oref, $nref, $branch) = explode(' ', $line);
+            $commits[] = array(
+                'start' => $oref,
+                'end' => $nref,
+                'branch' => $branch,
+            );
+        }
+
+        if (isset(self::$hooks['postReceive'])) {
+            foreach(self::$hooks['postReceive'] as $hook) {
+                call_user_func_array($hook, array($this, $commits));
+            }
+        }
     }
 }

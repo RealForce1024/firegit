@@ -28,8 +28,8 @@ class Controller extends \firegit\http\Controller
 
     function _before()
     {
-        $this->gitGroup = $_SERVER['GIT_GROUP'];
-        $this->gitName = $_SERVER['GIT_NAME'];
+        $this->gitGroup = $this->getData('gitGroup');
+        $this->gitName = $this->getData('gitName');
 
         $this->repo = new Reposite($this->gitGroup, $this->gitName);
 
